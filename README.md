@@ -2,36 +2,28 @@
 
 This is an unofficial fork of LogicReinc's BlendFarm software, with various changes and improvements. 
 This was created for personal use only, out of a desire to supersede BlendFarm's latest patch, which is currently 2 years old.
-As such, code review and pull requests are appreciated!
 
-First milestone (Neo improvements) :
-✓ Port the project to .NET 8, updating depedencies with known vulnerabilities
-- Implement network benchmarking runs to get accurate tile splits on first render
-- Allow wake/sleep control for nodes
-- Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
-- Dispatch renders from Blender directly, by allowing a native extension to communicate with the client application
-  
-Second milestone (Core improvements described in the original readme) :
-- General UI redesign
-- Improve unit tests
-- Batch Animation Frames (Reduce "Render Loading.. between frames)
-- Settings Interface
-
-Third milestone (Nice to have) : 
-- Memory Management : TCP protocol (and other places) may benefit from minor memory improvements.
-- Auto-merge animations into video/gifs
-- Render Focus (target a specific area to render first)
-- Render Rectangle (just render a specific area)
-- Docker Image
-- More?
+This is experimental, so use at your own risk! Code review and pull requests are appreciated.
 
 Special thanks to : 
 - LogicReinc for the base software : https://github.com/LogicReinc/LogicReinc.BlendFarm
 - Ludrietz for their own improvements fork : https://github.com/Ludrietz/LogicReinc.BlendFarm
 
-Don't forget to send a tip over to LogicReinc's Patreon for their work : 
-https://patreon.com/LogicReinc
-Ethereum: 0xd2C3BCCc981d359e037457f0CdB9d48fdc289Feb
+### Planned improvements :
+- ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
+- ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled ✓
+- Implement network benchmarking runs to get accurate tile splits on first render
+
+- Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
+- General UI redesign
+- Improve unit tests
+- Batch Animation Frames (Reduce "Render Loading.. between frames)
+- Settings Interface
+- TCP protocol (and other places) may benefit from minor memory improvements
+- Auto-merge animations into video/gifs
+- Render Focus (target a specific area to render first)
+- Render Rectangle (just render a specific area)
+- Docker Image
 
 # Original readme : 
 When I was trying to build a render server I was suprised most network renderers out there for Blender are either outdated, obsolete or require very specific environments to work properly. Thus, I spend the last months writing and testing a stand-alone network renderer that requires barely any setup and should work with most if not all recent versions of Blender. And should even work with future releases. 
