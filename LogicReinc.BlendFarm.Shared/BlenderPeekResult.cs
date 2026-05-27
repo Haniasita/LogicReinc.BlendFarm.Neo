@@ -6,6 +6,8 @@ namespace LogicReinc.BlendFarm.Shared
 {
     public class BlenderPeekResult
     {
+        public string Engine { get; set; }
+        public string OutputPath { get; set; }
         public int RenderWidth { get; set; }
         public int RenderHeight { get; set; }
         public int FrameStart { get; set; }

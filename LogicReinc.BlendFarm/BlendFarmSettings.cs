@@ -105,6 +105,7 @@ namespace LogicReinc.BlendFarm
             public RenderType RenderType { get; set; } = RenderType.CPU;
             public double Performance { get; set; }
             public string Pass { get; set; }
+            public string MAC { get; set; }
         }
 
         /// <summary>

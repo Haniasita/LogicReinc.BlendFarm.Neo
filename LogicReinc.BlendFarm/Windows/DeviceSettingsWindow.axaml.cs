@@ -68,7 +68,8 @@ namespace LogicReinc.BlendFarm.Windows
                         Name = Node.Name,
                         Address = Node.Address,
                         RenderType = Node.RenderType,
-                        Pass = Node.Pass
+                        Pass = Node.Pass,
+                        MAC = Node.MAC
                     };
                     BlendFarmSettings.Instance.PastClients.Add(Node.Name, entry);
                 }
@@ -76,6 +77,7 @@ namespace LogicReinc.BlendFarm.Windows
             Node.RenderType = ((RenderType)selectRenderType.SelectedItem);
             entry.RenderType = Node.RenderType;
             entry.Pass = Node.Pass;
+            entry.MAC = Node.MAC;
             BlendFarmSettings.Instance.Save();
         }
 

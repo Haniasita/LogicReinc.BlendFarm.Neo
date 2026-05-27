@@ -54,7 +54,7 @@ namespace LogicReinc.BlendFarm.Server
         private Thread _listenerUDPThread = null;
         private Thread _broadcastThread = null;
 
-        private List<RenderServerClientTcp> Clients { get; } = new List<RenderServerClientTcp>();
+        public List<RenderServerClientTcp> Clients { get; } = new List<RenderServerClientTcp>();
 
         /// <summary>
         /// Event whenever an exception occurs in the server

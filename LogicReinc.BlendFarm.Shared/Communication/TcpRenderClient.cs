@@ -63,15 +63,38 @@ namespace LogicReinc.BlendFarm.Shared.Communication
         protected virtual void HandleDisconnected()
         {
         }
+        static async Task<TcpClient> TryConnectWithRetry(string host, int port, int maxAttempts = 2)
+        {
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                TcpClient client = new TcpClient();
+                try
+                {
+                    Console.WriteLine($"Attempt {attempt}...");
+                    await client.ConnectAsync(host, port);
+                    return client; // Success
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Attempt {attempt} failed: {ex.Message}");
+                    client.Dispose(); // Clean up failed attempt
+                    if (attempt == maxAttempts)
+                        return null;
+                    await Task.Delay(1000); // Optional backoff
+                }
+            }
 
+            return null;
+        }
         public static async Task<TcpRenderClient> Connect(string address, int port)
         {
-            TcpClient client = new TcpClient();
-            await client.ConnectAsync(address, port);
+            TcpClient client = await TryConnectWithRetry(address, port);
+            //await client.ConnectAsync(address, port);  only tries once
             return new TcpRenderClient(client);
         }
         public void Disconnect()
         {
+            if (Client == null) return;
             Listening = false;
             Client.Close();
             _cancel.Cancel();

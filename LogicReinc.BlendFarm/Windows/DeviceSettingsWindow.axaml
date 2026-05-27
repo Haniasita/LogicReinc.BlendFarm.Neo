@@ -33,6 +33,10 @@
 			<TextBlock Margin="5" Width="160" TextAlignment="Right" FontSize="15" Text="Password:" HorizontalAlignment="Right" ToolTip.Tip="Used for basic authentication, NOT recommended as it is not very secure" />
 			<TextBox Margin="10,0,0,0" Width="150"  FontSize="15" Text="{Binding Node.Pass}" PasswordChar="•"></TextBox>
 		</StackPanel>
+		<StackPanel Orientation="Horizontal" Margin="10,0,10,0">
+			<TextBlock Margin="5" Width="160" TextAlignment="Right" FontSize="15" Text="MAC:" HorizontalAlignment="Right" ToolTip.Tip="Used for basic authentication, NOT recommended as it is not very secure" />
+			<TextBox Margin="10,0,0,0" Width="150"  FontSize="15" Text="{Binding Node.MAC}"></TextBox>
+		</StackPanel>
 		<TextBlock Margin="10,0,0,0" Width="280" Foreground="Red" TextWrapping="Wrap" Text="Disclaimer: Password should not be your sole protection, it is not stored or transmitted securely"></TextBlock>
 		
 		
