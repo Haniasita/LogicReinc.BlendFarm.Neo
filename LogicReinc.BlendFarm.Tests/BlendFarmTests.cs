@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client;
+using LogicReinc.BlendFarm.Client;
 using LogicReinc.BlendFarm.Server;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -23,30 +23,34 @@ namespace LogicReinc.BlendFarm.Tests
     [TestClass]
     public class BlendFarmTests
     {
-        private static bool REMOVE_BLENDER = false;
-        private static bool REMOVE_RESULTS = false;
+        private static readonly bool REMOVE_BLENDER = false;
+        private static readonly bool REMOVE_RESULTS = false;
 
-        private static string BLEND_FILE = "BlendFarmDemo.blend";
-        private static string BLEND_VERSION = "blender-2.91.0";
+        private static readonly string BLEND_FILE = "BlendFarmDemo.blend";
+        private static readonly string BLEND_VERSION = "blender-2.91.0";
 
-        private static int PORT = 18585;
-        private static string THIS_NAME = "This";
-        private static string THIS_ADDRESS = $"127.0.0.1:{PORT}";
+        private static readonly int PORT = 18585;
+        private static readonly string THIS_NAME = "This";
+        private static readonly string THIS_ADDRESS = $"127.0.0.1:{PORT}";
 
-        private static string RESULTS_DIRECTORY = "BlendFrameTests_Results";
+        private static readonly string RESULTS_DIRECTORY = "BlendFrameTests_Results";
 
-        private static string SESSION = "whatever";
+        private static readonly string SESSION = "whatever";
 
-        public static BlenderManager blender = null;
-        public static RenderServer server = null;
-        public static BlendFarmManager manager = null;
+        public static readonly BlenderManager blender;
+        public static readonly RenderServer server;
+        public static readonly BlendFarmManager manager;
+
+        static BlendFarmTests()
+        {
+            blender = new();
+            server = new(PORT, -1, true);
+            manager = new(BLEND_FILE, BLEND_VERSION);
+        }
 
         [ClassInitialize]
-        public static void Init(TestContext context)
+        public static void Init(TestContext _)
         {
-            blender = new BlenderManager();
-            server = new RenderServer(PORT, -1, true);
-            manager = new BlendFarmManager(BLEND_FILE, BLEND_VERSION);
             server.Start();
             Thread.Sleep(3000);
 
@@ -66,9 +70,9 @@ namespace LogicReinc.BlendFarm.Tests
                     if (Directory.Exists(blender.BlenderData))
                         Directory.Delete(blender.BlenderData, true);
                 }
-                catch (Exception ex)
+                catch
                 {
-
+                    // Ignore cleanup errors
                 }
             }
             try
@@ -76,21 +80,21 @@ namespace LogicReinc.BlendFarm.Tests
                 if (Directory.Exists(blender.RenderData))
                     Directory.Delete(blender.RenderData, true);
             }
-            catch (Exception ex)
+            catch
             {
-
+                // Ignore cleanup errors
             }
             try
             {
                 if (Directory.Exists(blender.RenderData))
                     Directory.Delete(blender.RenderData, true);
             }
-            catch (Exception ex)
+            catch
             {
-
+                // Ignore cleanup errors
             }
 
-            if (REMOVE_RESULTS &&  Directory.Exists(RESULTS_DIRECTORY))
+            if (REMOVE_RESULTS && Directory.Exists(RESULTS_DIRECTORY))
                 Directory.Delete(RESULTS_DIRECTORY, true);
         }
 
@@ -129,7 +133,7 @@ namespace LogicReinc.BlendFarm.Tests
             long lastFileChange = new FileInfo(BLEND_FILE).LastWriteTime.Ticks;
 
             SyncResponse resp = null;
-            using (FileStream stream = new FileStream(BLEND_FILE, FileMode.Open))
+            using (FileStream stream = new(BLEND_FILE, FileMode.Open))
                 resp = await node.SyncFile(SESSION, lastFileChange, stream, Compression.Raw);
 
             Assert.IsTrue(resp.Success);
@@ -144,9 +148,9 @@ namespace LogicReinc.BlendFarm.Tests
             long lastFileChange = new FileInfo(BLEND_FILE).LastWriteTime.Ticks;
 
             SyncResponse resp = null;
-            using (MemoryStream str = new MemoryStream())
-            using (GZipStream zip = new GZipStream(str, CompressionMode.Compress))
-            using (FileStream stream = new FileStream(BLEND_FILE, FileMode.Open))
+            using (MemoryStream str = new())
+            using (GZipStream zip = new(str, CompressionMode.Compress))
+            using (FileStream stream = new(BLEND_FILE, FileMode.Open))
             {
                 byte[] buffer = new byte[4096];
                 int read = 0;
@@ -169,18 +173,18 @@ namespace LogicReinc.BlendFarm.Tests
 
             long lastFileChange = new FileInfo(BLEND_FILE).LastWriteTime.Ticks;
             SyncResponse respSync = null;
-            using (FileStream stream = new FileStream(BLEND_FILE, FileMode.Open))
+            using (FileStream stream = new(BLEND_FILE, FileMode.Open))
                 respSync = await node.SyncFile(SESSION, lastFileChange, stream, Compression.Raw);
             Assert.IsTrue(respSync.Success);
 
 
-            RenderResponse respRender = await node.Render(new RenderRequest()
+            RenderResponse respRender = await node.Render(new()
             {
                 FileID = lastFileChange,
                 SessionID = SESSION,
                 TaskID = "Whatever",
                 Version = BLEND_VERSION,
-                Settings = new Shared.RenderPacketModel()
+                Settings = new()
                 {
                     Width = 640,
                     Height = 360,
@@ -194,7 +198,7 @@ namespace LogicReinc.BlendFarm.Tests
             //Check equality
         }
 
-        private async Task PrepareManagedRender()
+        private static async Task PrepareManagedRender()
         {
             manager.AddNode(THIS_NAME, THIS_ADDRESS);
             await manager.ConnectAll();
@@ -208,7 +212,7 @@ namespace LogicReinc.BlendFarm.Tests
         [TestMethod]
         public async Task Render_Managed_Split()
         {
-            Stopwatch watch = new Stopwatch();
+            Stopwatch watch = new();
             watch.Start();
 
             await PrepareManagedRender();
@@ -217,7 +221,7 @@ namespace LogicReinc.BlendFarm.Tests
             watch.Restart();
 
             int render = 0;
-            Bitmap final = await manager.Render(BLEND_FILE, new RenderManagerSettings()
+            Bitmap final = (Bitmap)await manager.Render(BLEND_FILE, new()
             {
                 OutputWidth = 640,
                 OutputHeight = 360,
@@ -241,7 +245,7 @@ namespace LogicReinc.BlendFarm.Tests
         [TestMethod]
         public async Task Render_Managed_Chunked()
         {
-            Stopwatch watch = new Stopwatch();
+            Stopwatch watch = new();
             watch.Start();
 
             await PrepareManagedRender();
@@ -252,7 +256,7 @@ namespace LogicReinc.BlendFarm.Tests
             int render = 0;
 
             bool gotBitmap = false;
-            Bitmap final = await manager.Render(BLEND_FILE, new RenderManagerSettings()
+            Bitmap final = (Bitmap)await manager.Render(BLEND_FILE, new()
             {
                 Strategy = RenderStrategy.Chunked,
                 ChunkHeight = 1,
@@ -283,7 +287,7 @@ namespace LogicReinc.BlendFarm.Tests
         [TestMethod]
         public async Task Render_Managed_SplitChunked()
         {
-            Stopwatch watch = new Stopwatch();
+            Stopwatch watch = new();
             watch.Start();
 
             await PrepareManagedRender();
@@ -294,7 +298,7 @@ namespace LogicReinc.BlendFarm.Tests
             int render = 0;
 
             bool gotBitmap = false;
-            Bitmap final = await manager.Render(BLEND_FILE, new RenderManagerSettings()
+            Bitmap final = (Bitmap)await manager.Render(BLEND_FILE, new()
             {
                 Strategy = RenderStrategy.SplitChunked,
                 ChunkHeight = 1,
@@ -329,7 +333,7 @@ namespace LogicReinc.BlendFarm.Tests
         {
             await PrepareManagedRender();
 
-            Bitmap final = await manager.Render(new RenderManagerSettings()
+            Bitmap final = await manager.Render(new()
             {
                 Strategy = RenderStrategy.Chunked,
                 Width = 1920,

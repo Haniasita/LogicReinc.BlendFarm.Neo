@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.ImageTypes;
+using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
 using System;
 using System.Collections.Generic;
@@ -32,8 +32,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
 
         protected override void Roundup()
         {
-            if (g != null)
-                g.Dispose();
+            g?.Dispose();
 
             FinalImage = result;
         }
@@ -41,7 +40,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         protected override void HandleResult(RenderSubTask task, SubTaskResult tresult)
         {
             ChangeProgress(Progress + task.Value);
-            using (Image img = ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
+            using (Image img = ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
                 ProcessTile(task, img, ref g, ref result, ref _drawLock);
         }
 
@@ -49,7 +48,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         /// <summary>
         /// Splits up file into subtasks based on Settings.ChunkWidth/Height
         /// </summary>
-        private List<RenderSubTask> GetChunkedSubTasks(decimal overlap = 0.003m)
+        private new List<RenderSubTask> GetChunkedSubTasks(decimal overlap = 0.003m)
         {
             decimal blockSizeX = Settings.ChunkWidth;
             decimal blockSizeY = Settings.ChunkHeight;
@@ -105,7 +104,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         /// <summary>
         /// Creates a queue from a list of subtasks based on the provided order (eg. Center)
         /// </summary>
-        private RenderSubTask[] GetTaskQueueInOrder(List<RenderSubTask> queue, TaskOrder order)
+        private new RenderSubTask[] GetTaskQueueInOrder(List<RenderSubTask> queue, TaskOrder order)
         {
             RenderSubTask[] newOrder;
 

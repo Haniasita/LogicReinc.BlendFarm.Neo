@@ -15,14 +15,14 @@ namespace LogicReinc.BlendFarm.Shared.Communication
     {
         private const int MAX_HEADER_SIZE = 24;
 
-        private static Dictionary<Type, Dictionary<string, MethodInfo>> _typeHandlers = new Dictionary<Type, Dictionary<string, MethodInfo>>();
-        private Dictionary<string, MethodInfo> _handlers = null;
+        private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> _typeHandlers = new Dictionary<Type, Dictionary<string, MethodInfo>>();
+        private readonly Dictionary<string, MethodInfo> _handlers = null;
 
         public TcpClient Client { get; private set; }
         public bool Listening { get; private set; }
 
-        private CancellationTokenSource _cancel = new CancellationTokenSource();
-        private Thread _listenThread = null;
+        private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+        private readonly Thread _listenThread = null;
 
         public event Action<TcpRenderClient> OnDisconnected;
         public event Action<TcpRenderClient, BlendFarmMessage> OnMessage;
@@ -39,14 +39,14 @@ namespace LogicReinc.BlendFarm.Shared.Communication
             Client = client;
 
             Listening = true;
-            _listenThread = new Thread(async () =>
+            _listenThread = new Thread(() =>
             {
                 Thread.Sleep(100);
                 try
                 {
-                    await Listen();
+                    Listen().Wait();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine("TCP listening exception: " + ex.Message);
                 }
@@ -91,7 +91,7 @@ namespace LogicReinc.BlendFarm.Shared.Communication
             {
                 req = (BlendFarmMessage)BinaryParser.Deserialize(reader, packetType);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new InvalidDataException($"Failed to parse {packetType.Name} due to:" + ex.Message);
             }
@@ -106,21 +106,20 @@ namespace LogicReinc.BlendFarm.Shared.Communication
                         MethodInfo method = _handlers[header];
                         object resp = method.Invoke(this, new object[] { req });
 
-                        if (resp != null && resp is BlendFarmMessage)
+                        if (resp is BlendFarmMessage bfresp)
                         {
-                            BlendFarmMessage bfresp = ((BlendFarmMessage)resp);
                             if (req.RequestID != null)
                                 bfresp.ResponseID = req.RequestID;
 
-                            SendPacket((BlendFarmMessage)resp);
+                            SendPacket(bfresp);
                         }
                     }
                     else
                         OnMessage?.Invoke(this, req);
                 }
-                catch(TargetInvocationException ex)
+                catch (TargetInvocationException ex)
                 {
-                    if(ex.InnerException is ClientStateException)
+                    if (ex.InnerException is ClientStateException)
                     {
                         _disconnectIsError = true;
                         _disconnectReason = ex.InnerException.Message;
@@ -153,16 +152,17 @@ namespace LogicReinc.BlendFarm.Shared.Communication
             while (Listening)
             {
 
-                int read = 0;
-                if ((read = await str.ReadAsync(headerBytes, 0, MAX_HEADER_SIZE, _cancel.Token)) != MAX_HEADER_SIZE)
-                    throw new InvalidDataException($"Expected header of length {MAX_HEADER_SIZE}, found {read}");
+                _ = await str.ReadAsync(headerBytes, 0, MAX_HEADER_SIZE, _cancel.Token);
+                if (headerBytes.Length != MAX_HEADER_SIZE)
+                    throw new InvalidDataException($"Expected header of length {MAX_HEADER_SIZE}");
                 string header = Encoding.UTF8.GetString(headerBytes).Trim('_');
 
-                if ((read = await str.ReadAsync(sizeBytes, 0, 4, _cancel.Token)) != sizeBytes.Length)
-                    throw new InvalidDataException($"Expected size of length {sizeBytes.Length}, found {read}");
+                _ = await str.ReadAsync(sizeBytes, 0, 4, _cancel.Token);
+                if (sizeBytes.Length != 4)
+                    throw new InvalidDataException($"Expected size of length 4");
                 int size = (int)BinaryParser.Deserialize(sizeBytes, typeof(int));
 
-                if(header != "consoleActivityResponse")
+                if (header != "consoleActivityResponse")
                     Console.WriteLine($"Received {header} [{size}] from {Client.Client.RemoteEndPoint}");
 
                 HandlePacket(header, reader);
@@ -187,9 +187,9 @@ namespace LogicReinc.BlendFarm.Shared.Communication
                 {
                     body = BinaryParser.Serialize(message);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    throw new InvalidDataException($"Failed to serialize {t.Name}");
+                    throw new InvalidDataException($"Failed to serialize {t.Name}: {ex.Message}", ex);
                 }
 
                 byte[] size = BinaryParser.Serialize(body.Length);
@@ -227,3 +227,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication
         }
     }
 }
+
+

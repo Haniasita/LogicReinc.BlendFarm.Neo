@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using LogicReinc.BlendFarm.Server;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace LogicReinc.BlendFarm
 
         public static void Stop()
         {
-            if(_server != null)
+            if (_server != null)
                 _server.Stop();
         }
     }

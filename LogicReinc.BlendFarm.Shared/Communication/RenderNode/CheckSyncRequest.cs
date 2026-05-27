@@ -21,3 +21,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public string Message { get; set; }
     }
 }
+
+

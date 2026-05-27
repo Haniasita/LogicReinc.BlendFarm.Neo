@@ -33,15 +33,15 @@ namespace LogicReinc.BlendFarm.Shared
 
         public static List<WebIndex> GetIndexes(string url)
         {
-            using(WebClient client = new IndexWebClient())
+            using (WebClient client = new IndexWebClient())
             {
                 string html = client.DownloadString(url);
 
                 List<WebIndex> Indexes = new List<WebIndex>();
 
-                foreach(Match match in REGEX_INDEX.Matches(html))
+                foreach (Match match in REGEX_INDEX.Matches(html))
                 {
-                    if(match.Groups.Count == 5)
+                    if (match.Groups.Count == 5)
                     {
                         string iurl = Path.Combine(url, match.Groups[1].Value);
                         string name = match.Groups[2].Value;
@@ -85,3 +85,4 @@ namespace LogicReinc.BlendFarm.Shared
         }
     }
 }
+

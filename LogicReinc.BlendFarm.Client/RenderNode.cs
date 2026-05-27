@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.Exceptions;
+using LogicReinc.BlendFarm.Client.Exceptions;
 using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Communication;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
@@ -26,7 +26,7 @@ namespace LogicReinc.BlendFarm.Client
         public const int MinimumVersionMinor = 1;
         public const int MinimumVersionPatch = 3;
 
-        private StringBuilder _currentLog = new StringBuilder();
+        private readonly StringBuilder _currentLog = new StringBuilder();
 
         //Info
         /// <summary>
@@ -171,7 +171,7 @@ namespace LogicReinc.BlendFarm.Client
 
         public RenderNode()
         {
-            OnConnected += (n) => 
+            OnConnected += (n) =>
                 TriggerPropChange(nameof(Connected));
             OnDisconnected += (n) =>
             {
@@ -219,7 +219,7 @@ namespace LogicReinc.BlendFarm.Client
 
                 try
                 {
-                    _currentLog.Clear();
+                    _ = _currentLog.Clear();
                     Client = await RenderClient.Connect(Address);
                     Client.OnConnected += (a) => OnConnected?.Invoke(this);
                     Client.OnDisconnected += (a) => OnDisconnected?.Invoke(this);
@@ -237,7 +237,7 @@ namespace LogicReinc.BlendFarm.Client
                     if (protocolResp == null || Protocol.Version != protocolResp.ProtocolVersion)
                         throw new InvalidOperationException($"Outdated protocol, update node before connecting (Protocol: {Protocol.Version}, Found: {protocolResp?.ProtocolVersion})");
 
-                    if(protocolResp.RequireAuth)
+                    if (protocolResp.RequireAuth)
                     {
                         try
                         {
@@ -245,10 +245,10 @@ namespace LogicReinc.BlendFarm.Client
                             {
                                 Pass = Pass
                             }, CancellationToken.None);
-                            if(!resp.IsAuthenticated)
+                            if (!resp.IsAuthenticated)
                                 throw new InvalidDataException("Authentication failed");
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             throw new InvalidDataException($"Authentication failed ({ex.Message})");
                         }
@@ -263,7 +263,7 @@ namespace LogicReinc.BlendFarm.Client
                     UpdateException("");
                     OnConnected?.Invoke(this);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     UpdateException(ex.Message);
                     Client = null;
@@ -299,9 +299,9 @@ namespace LogicReinc.BlendFarm.Client
                     await Connect();
                     return await Recover(sessions);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Recover failed due to: {ex.Message} ({i+1}/{attempts})");
+                    Console.WriteLine($"Recover failed due to: {ex.Message} ({i + 1}/{attempts})");
                 }
                 await Task.Delay(interval);
             }
@@ -325,31 +325,39 @@ namespace LogicReinc.BlendFarm.Client
         /// </summary>
         private void HandlePacket(RenderClient client, BlendFarmMessage p)
         {
-            if (p is RenderInfoResponse)
+            if (p is RenderInfoResponse renderResp)
             {
-                RenderInfoResponse renderResp = ((RenderInfoResponse)p);
-
                 double progress = Math.Round(((double)renderResp.TilesFinished / renderResp.TilesTotal) * 100, 1);
                 if (renderResp.TaskID == CurrentTask)
-                    UpdateActivity($"Rendering ({renderResp.TilesFinished}/{renderResp.TilesTotal})", progress);
+                {
+                    string phase = string.IsNullOrEmpty(renderResp.Phase) ? "Rendering" : renderResp.Phase;
+                    string activity = $"{phase} ({renderResp.TilesFinished}/{renderResp.TilesTotal})";
+                    if (renderResp.Time > 0)
+                    {
+                        activity += $" - {TimeSpan.FromSeconds(renderResp.Time):hh\\:mm\\:ss}";
+                        // Remaining is phase-local (we don't know how long the other phases will take),
+                        // so only show it once enough samples are in to make the estimate meaningful.
+                        if (renderResp.TimeRemaining > 0)
+                            activity += $" / ~{TimeSpan.FromSeconds(renderResp.TimeRemaining):hh\\:mm\\:ss} left";
+                    }
+                    UpdateActivity(activity, progress);
+                }
             }
-            if(p is RenderBatchResult)
+            if (p is RenderBatchResult renderBatchResult)
             {
-                RenderBatchResult renderBatchResult = ((RenderBatchResult)p);
-
                 OnBatchResult?.Invoke(this, renderBatchResult);
-               
+
             }
-            if(p is BlendFarmDisconnected packDisconnected)
+            if (p is BlendFarmDisconnected packDisconnected)
             {
                 if (packDisconnected.IsError)
                     UpdateException(packDisconnected.Reason);
             }
-            if(p is ActivityRequest packAct)
+            if (p is ActivityRequest packAct)
             {
                 UpdateActivity(packAct.Activity, packAct.Progress);
             }
-            if(p is ConsoleActivityResponse packConsole)
+            if (p is ConsoleActivityResponse packConsole)
             {
                 _currentLog.AppendLine(packConsole.Output);
                 OnLog?.Invoke(this, packConsole.Output);
@@ -560,13 +568,13 @@ namespace LogicReinc.BlendFarm.Client
                         resp = await Client.Send<RenderBatchResponse>(req, _taskCancelToken.Token);
                         break;
                     }
-                    catch (BlendFarmDisconnectedException ex)
+                    catch (BlendFarmDisconnectedException)
                     {
                         RecoverResponse r = await ConnectRecover(5, 1000, new string[] { req.SessionID });
                         if (!r.Success)
                             throw new RecoverException(r.Message);
                     }
-                    catch (Exception exOther)
+                    catch (Exception)
                     {
                         throw;
                     }
@@ -596,14 +604,14 @@ namespace LogicReinc.BlendFarm.Client
                 UpdateActivity("Render Loading..");
 
                 int recoverAtts = 0;
-                while (true) 
+                while (true)
                 {
                     try
                     {
                         resp = await Client.Send<RenderResponse>(req, _taskCancelToken.Token);
                         break;
                     }
-                    catch (BlendFarmDisconnectedException ex)
+                    catch (BlendFarmDisconnectedException)
                     {
                         recoverAtts++;
                         if (recoverAtts > 3)
@@ -613,7 +621,7 @@ namespace LogicReinc.BlendFarm.Client
                         if (!r.Success)
                             throw new RecoverException(r.Message);
                     }
-                    catch (Exception exOther)
+                    catch (Exception)
                     {
                         throw;
                     }
@@ -629,7 +637,7 @@ namespace LogicReinc.BlendFarm.Client
 
             return resp;
         }
-        
+
         public async Task<BlenderPeekResponse> Peek(BlenderPeekRequest req)
         {
             if (Client == null)
@@ -648,7 +656,7 @@ namespace LogicReinc.BlendFarm.Client
                         resp = await Client.Send<BlenderPeekResponse>(req, _taskCancelToken.Token);
                         break;
                     }
-                    catch (BlendFarmDisconnectedException ex)
+                    catch (BlendFarmDisconnectedException)
                     {
                         recoverAtts++;
                         if (recoverAtts > 3)
@@ -658,7 +666,7 @@ namespace LogicReinc.BlendFarm.Client
                         if (!r.Success)
                             throw new RecoverException(r.Message);
                     }
-                    catch (Exception exOther)
+                    catch (Exception)
                     {
                         throw;
                     }
@@ -790,7 +798,7 @@ namespace LogicReinc.BlendFarm.Client
                 OnActivityChanged?.Invoke(this, activity);
                 TriggerPropChange(nameof(Activity), nameof(IsIdle));
             }
-            if(ActivityProgress != progress)
+            if (ActivityProgress != progress)
             {
                 ActivityProgress = progress;
                 TriggerPropChange(nameof(ActivityProgress), nameof(HasActivityProgress));
@@ -802,10 +810,8 @@ namespace LogicReinc.BlendFarm.Client
             if (sessionID == null)
                 return false;
 
-            bool sessionSynced = false;
             lock (SyncedMap)
-                sessionSynced = SyncedMap.ContainsKey(sessionID) ? SyncedMap[sessionID] : false;
-            return sessionSynced;
+                return SyncedMap.TryGetValue(sessionID, out bool sessionSynced) && sessionSynced;
         }
 
         public void UpdateFileID(long id)
@@ -832,7 +838,7 @@ namespace LogicReinc.BlendFarm.Client
         }
         public void UpdateSyncedStatus(string sessionId, bool val)
         {
-            lock(SyncedMap)
+            lock (SyncedMap)
             {
                 if (SyncedMap.ContainsKey(sessionId))
                     SyncedMap[sessionId] = val;

@@ -9,3 +9,4 @@ namespace LogicReinc.BlendFarm.Shared.Exceptions
         public ClientStateException(string msg, Exception ex = null) : base(msg, ex) { }
     }
 }
+

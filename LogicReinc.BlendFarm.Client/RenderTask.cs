@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client;
+using LogicReinc.BlendFarm.Client;
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Client.Tasks;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LogicReinc.BlendFarm.Shared
+namespace LogicReinc.BlendFarm.Client
 {
     /// <summary>
     /// Describes a render task for a specific blender version and blend file
@@ -141,19 +141,19 @@ namespace LogicReinc.BlendFarm.Shared
             Dictionary<RenderNode, decimal> perfs = new Dictionary<RenderNode, decimal>();
             if (nodes.Count == 0)
                 return new Dictionary<RenderNode, decimal>();
-            if (Settings.UseAutoPerformance && !nodes.Any(x=>x.PerformanceScorePP <= 0))
+            if (Settings.UseAutoPerformance && !nodes.Any(x => x.PerformanceScorePP <= 0))
             {
                 decimal total = (decimal)nodes.Sum(x => (x.PerformanceScorePP > 0) ? x.PerformanceScorePP : x.Cores);
                 foreach (RenderNode node in nodes)
                 {
                     decimal perf = (node.PerformanceScorePP > 0) ? node.PerformanceScorePP : node.Cores;
-                    perfs.Add(node,  perf / total);
+                    perfs.Add(node, perf / total);
                 }
             }
             else
             {
                 decimal total = (decimal)nodes.Sum(x => (x.Performance > 0) ? x.Performance : x.Cores);
-                foreach(RenderNode node in nodes)
+                foreach (RenderNode node in nodes)
                 {
                     decimal perf = (node.Performance > 0) ? (decimal)node.Performance : node.Cores;
                     perfs.Add(node, perf / total);
@@ -162,14 +162,14 @@ namespace LogicReinc.BlendFarm.Shared
             return perfs;
         }
 
-        
+
         /// <summary>
         /// Cancel ongoing rendering
         /// </summary>
         public async Task Cancel()
         {
             Cancelled = true;
-            if(Consumed)
+            if (Consumed)
                 await Task.WhenAll(_usedNodes.Select(async x =>
                 {
                     await x.CancelRender(SessionID);
@@ -279,7 +279,8 @@ namespace LogicReinc.BlendFarm.Shared
             switch (order)
             {
                 case TaskOrder.Center:
-                    newOrder = queue.OrderBy(x => {
+                    newOrder = queue.OrderBy(x =>
+                    {
 
                         decimal posX = x.X + (x.X2 - x.X) / 2;
                         decimal posY = x.Y + (x.Y2 - x.Y) / 2;
@@ -316,8 +317,7 @@ namespace LogicReinc.BlendFarm.Shared
             {
                 while (subtasks.Count > 0 && !Cancelled)
                 {
-                    RenderSubTask task = null;
-                    if (!subtasks.TryDequeue(out task))
+                    if (!subtasks.TryDequeue(out RenderSubTask task))
                         continue;
                     SubTaskResult taskPart = null;
                     try
@@ -331,7 +331,7 @@ namespace LogicReinc.BlendFarm.Shared
 
                         onFinished(task, taskPart);
                     }
-                    catch (TaskCanceledException ex)
+                    catch (TaskCanceledException)
                     {
                         if (Cancelled)
                             return;
@@ -354,7 +354,7 @@ namespace LogicReinc.BlendFarm.Shared
         /// </summary>
         protected SubTaskBatchResult ExecuteSubTasks(RenderNode node, Action<RenderSubTask, RenderBatchResult> onResult, params RenderSubTask[] tasks)
         {
-            return  ExecuteSubTasksAsync(node, onResult, tasks).GetAwaiter().GetResult();
+            return ExecuteSubTasksAsync(node, onResult, tasks).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Async executes a batch of subtasks on node
@@ -364,7 +364,7 @@ namespace LogicReinc.BlendFarm.Shared
             List<RenderRequest> reqs = tasks.Select(x => x.GetRenderRequest()).ToList();
 
             List<RenderBatchResult> results = new List<RenderBatchResult>();
-            Action<RenderNode, RenderBatchResult> onAnyResult = (bnode, result) =>
+            void OnAnyResult(RenderNode bnode, RenderBatchResult result)
             {
                 RenderSubTask task = tasks.FirstOrDefault(x => x.ID == result.TaskID);
                 if (task != null)
@@ -373,13 +373,13 @@ namespace LogicReinc.BlendFarm.Shared
                         results.Add(result);
                     onResult(task, result);
                 }
-            };
+            }
 
             Stopwatch time = new Stopwatch();
             time.Start();
             try
             {
-                node.OnBatchResult += onAnyResult;
+                node.OnBatchResult += OnAnyResult;
 
 
                 RenderBatchRequest req = RenderSubTask.GetRenderBatchRequest(ID, tasks);
@@ -392,7 +392,7 @@ namespace LogicReinc.BlendFarm.Shared
                 if (resp.Success == false)
                     return new SubTaskBatchResult(new Exception("Render fail: " + resp.Message));
 
-                if (req.Settings.Count > 0) 
+                if (req.Settings.Count > 0)
                 {
                     decimal pixelsRendered = req.Settings.Sum(x => (x.Height * (x.Y2 - x.Y)) * (x.Width * (x.X2 - x.X)));
                     node.UpdatePerformance((int)pixelsRendered, (int)time.ElapsedMilliseconds);
@@ -401,7 +401,7 @@ namespace LogicReinc.BlendFarm.Shared
             }
             finally
             {
-                node.OnBatchResult -= onAnyResult;
+                node.OnBatchResult -= OnAnyResult;
                 time.Stop();
             }
             return new SubTaskBatchResult(results.ToArray());
@@ -439,7 +439,7 @@ namespace LogicReinc.BlendFarm.Shared
                     return new SubTaskResult(new Exception("Render fail: " + resp.Message));
 
                 //Update Performance
-                node.UpdatePerformance((int)((req.Settings.Height * (req.Settings.Y2 - req.Settings.Y)) * (req.Settings.Width * (req.Settings.X2 - req.Settings.X))), 
+                node.UpdatePerformance((int)((req.Settings.Height * (req.Settings.Y2 - req.Settings.Y)) * (req.Settings.Width * (req.Settings.X2 - req.Settings.X))),
                     (int)time.ElapsedMilliseconds);
 
                 result = resp.Data;
@@ -456,7 +456,7 @@ namespace LogicReinc.BlendFarm.Shared
 
         protected void ProcessTile(RenderSubTask task, SubTaskResult tresult, ref Graphics g, ref Bitmap result, ref object drawLock, bool dontDraw = false)
         {
-            using(Image img = ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
+            using (Image img = LogicReinc.BlendFarm.Client.ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
             {
                 ProcessTile(task, img, ref g, ref result, ref drawLock, dontDraw);
             }
@@ -490,11 +490,9 @@ namespace LogicReinc.BlendFarm.Shared
                     else
                         g.DrawImage(part, 0, 0, task.Parent.Settings.OutputWidth, task.Parent.Settings.OutputHeight);
                 }
-            if (OnResultUpdated != null)
-                OnResultUpdated(task, result);
+                OnResultUpdated?.Invoke(task, result);
             }
-            if (OnTileProcessed != null)
-                OnTileProcessed(task, part);
+            OnTileProcessed?.Invoke(task, part);
         }
 
         //Util
@@ -527,8 +525,8 @@ namespace LogicReinc.BlendFarm.Shared
 
         public static RenderTask GetImageRenderTask(List<RenderNode> nodes, string session, string version, long fileId, RenderManagerSettings settings = null)
         {
-            RenderTask task = null;
-            switch(settings?.Strategy)
+            RenderTask task;
+            switch (settings?.Strategy)
             {
                 case RenderStrategy.Chunked:
                     task = new ChunkedTask(nodes, session, version, fileId, settings);
@@ -537,8 +535,6 @@ namespace LogicReinc.BlendFarm.Shared
                     task = new SplitChunkedTask(nodes, session, version, fileId, settings);
                     break;
                 default:
-                case RenderStrategy.SplitHorizontal:
-                case RenderStrategy.SplitVertical:
                     task = new SplittedTask(nodes, session, version, fileId, settings, settings?.Strategy == RenderStrategy.SplitVertical);
                     break;
             }
@@ -584,3 +580,4 @@ namespace LogicReinc.BlendFarm.Shared
     }
 
 }
+

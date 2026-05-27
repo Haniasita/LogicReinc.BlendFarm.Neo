@@ -16,6 +16,8 @@ import bpy
 import sys
 import json
 import time
+import os
+import re
 from multiprocessing import cpu_count
 
 isPre3 = bpy.app.version < (3,0,0);
@@ -81,6 +83,147 @@ def useDevices(type, allowGPU, allowCPU):
         for d in devices:
             d.use = (allowCPU and d.type == "CPU") or (allowGPU and d.type != "CPU");
             print(type + " Device:", d["name"], d["use"]);
+
+progress_file_path = None
+render_task_id = None
+render_stats_count = 0
+render_stats_total = 100
+render_stats_phase = 0
+render_start_time = 0.0
+render_heartbeat_warned = False
+
+# Cycles emits stats strings like "Sample 50/100" or "Path Tracing Sample 50/100";
+# older tile-based output uses "Rendered 5/16 Tiles".
+_SAMPLE_PATTERN = re.compile(r'Sample[s]?\s*(\d+)\s*/\s*(\d+)', re.IGNORECASE)
+_TILE_PATTERN = re.compile(r'(?:Rendered|Tile)\s*(\d+)\s*/\s*(\d+)', re.IGNORECASE)
+
+# A render goes through three observable phases: scene/kernel preparation,
+# the actual sample loop, and post-processing/file write. Cycles re-uses the
+# same N/M counter for each, so the progress bar naturally cycles 0→100% three
+# times. Labelling the phase tells the user which one they're watching.
+_PHASE_NAMES = ("Loading", "Rendering", "Saving")
+_PHASE_KEYWORDS = (
+    # Order matters: more specific/late-stage phases checked first so a stray
+    # "loading" message during saving doesn't drag the label backward.
+    (2, ("saving", "compositing", "writing", "denois", "merg", "finaliz", "wrote")),
+    (1, ("sample",)),
+    (0, ("loading", "building", "compiling", "synchroniz", "kernel", "bvh", "updat")),
+)
+
+def _detect_phase(stats_str):
+    if not stats_str:
+        return None
+    s = stats_str.lower()
+    for idx, keywords in _PHASE_KEYWORDS:
+        for kw in keywords:
+            if kw in s:
+                return idx
+    return None
+
+def write_progress(task_id, tiles_finished, tiles_total, phase=None, elapsed=0.0, remaining=-1.0):
+    """Write progress to JSON file"""
+    global progress_file_path
+    if progress_file_path:
+        try:
+            progress_data = {
+                "TaskID": task_id,
+                "TilesFinished": tiles_finished,
+                "TilesTotal": tiles_total,
+                "Phase": phase,
+                "Elapsed": elapsed,
+                "Remaining": remaining,
+                "Timestamp": time.time()
+            }
+            with open(progress_file_path, 'w') as f:
+                json.dump(progress_data, f)
+        except:
+            pass
+
+def on_render_stats(*args):
+    """Render-engine stats callback. Invoked by Blender's render engine
+    (BKE_callback_exec_string) from the render thread, so it fires during
+    bpy.ops.render.render() — including for OptiX/HIP/CUDA where stdout
+    progress lines are unreliable. bpy.app.timers cannot be used here
+    because the event loop is blocked while rendering."""
+    global progress_file_path, render_task_id, render_stats_count, render_stats_total
+    global render_stats_phase, render_start_time, render_heartbeat_warned
+
+    if not progress_file_path or not render_task_id:
+        return
+
+    render_stats_count += 1
+
+    parsed_current = None
+    parsed_total = None
+    detected_phase = None
+    status_message = None
+    for a in args:
+        if isinstance(a, str):
+            if status_message is None:
+                status_message = a
+            if parsed_current is None:
+                m = _SAMPLE_PATTERN.search(a) or _TILE_PATTERN.search(a)
+                if m:
+                    parsed_current = int(m.group(1))
+                    parsed_total = int(m.group(2))
+            if detected_phase is None:
+                detected_phase = _detect_phase(a)
+            if parsed_current is not None and detected_phase is not None:
+                break
+
+    # Phase only advances forward, so an unrelated message during a later phase
+    # can't drag the label back to "Loading".
+    if detected_phase is not None and detected_phase > render_stats_phase:
+        render_stats_phase = detected_phase
+
+    # Step counts (current/total) only meaningful during rendering phase
+    if render_stats_phase == 1:
+        if parsed_current is not None:
+            current = parsed_current
+            total = parsed_total
+            render_stats_total = total
+        else:
+            # No parseable string — fall back to a heartbeat counter. Warn once so
+            # users running an older Blender (where stats handlers don't receive
+            # the stats string as a positional arg) understand why the bar is rough.
+            if not render_heartbeat_warned:
+                render_heartbeat_warned = True
+                print("WARN: render_stats provided no parseable progress string; "
+                      "falling back to heartbeat-based estimation. Per-sample "
+                      "progress unavailable on this Blender build.", flush=True)
+            current = render_stats_count
+            total = render_stats_total
+
+        # Don't appear complete before render_complete actually fires (post-processing,
+        # denoising, file write all happen after the last sample).
+        if current >= total:
+            current = max(1, total - 1)
+    else:
+        # Loading and Saving phases: no step counter
+        current = 0
+        total = 0
+
+    elapsed = time.time() - render_start_time
+    remaining = -1.0
+    # Need a few percent of progress to make a remaining-time estimate that
+    # isn't wildly noisy. The estimate is phase-local (we don't know phase
+    # weights), but the user's elapsed clock keeps running across all phases.
+    if render_stats_phase == 1 and current >= max(2, total * 0.05) and total > 0:
+        remaining = max(0.0, (elapsed / current) * (total - current))
+
+    write_progress(render_task_id, current, total,
+                   status_message or _PHASE_NAMES[render_stats_phase], elapsed, remaining)
+
+def on_render_complete(*args):
+    """Frame finished — flush 100% so the client sees completion immediately."""
+    global progress_file_path, render_task_id, render_stats_total, render_start_time
+    if progress_file_path and render_task_id:
+        elapsed = time.time() - render_start_time
+        write_progress(render_task_id, render_stats_total, render_stats_total,
+                       _PHASE_NAMES[-1], elapsed, 0.0)
+
+def on_render_cancel(*args):
+    on_render_complete(*args)
 
 #Renders provided settings with id to path
 def renderWithSettings(renderSettings, id, path):
@@ -234,11 +377,72 @@ def renderWithSettings(renderSettings, id, path):
         # Set Output
         scn.render.filepath = path;
 
+        # Setup progress tracking
+        global progress_file_path, render_task_id, render_stats_count, render_stats_total
+        global render_stats_phase, render_start_time, render_heartbeat_warned
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        progress_dir = os.path.join(temp_dir, "BlendFarmProgress")
+        os.makedirs(progress_dir, exist_ok=True)
+        progress_file_path = os.path.join(progress_dir, str(id) + ".progress.json")
+        render_task_id = str(id)
+
+        render_stats_count = 0
+        render_stats_phase = 0
+        render_heartbeat_warned = False
+        render_start_time = time.time()
+        if scn.render.engine == "CYCLES":
+            render_stats_total = max(1, scn.cycles.samples)
+        else:
+            render_stats_total = 100
+
+        # Initialize progress file
+        write_progress(str(id), 0, render_stats_total, _PHASE_NAMES[0], 0.0, -1.0)
+
+        # Register render-engine handlers. render_stats fires from the render
+        # thread during bpy.ops.render.render() for every device backend
+        # (CPU, CUDA, OptiX, HIP, Metal, ONEAPI), so progress is reported even
+        # when GPU backends don't print "Sample N/M" lines to stdout.
+        if on_render_stats not in bpy.app.handlers.render_stats:
+            bpy.app.handlers.render_stats.append(on_render_stats)
+        if on_render_complete not in bpy.app.handlers.render_complete:
+            bpy.app.handlers.render_complete.append(on_render_complete)
+        if on_render_cancel not in bpy.app.handlers.render_cancel:
+            bpy.app.handlers.render_cancel.append(on_render_cancel)
 
         # Render
         print("RENDER_START:" + str(id) + "\n", flush=True);
 
-        bpy.ops.render.render(animation=False, write_still=True, use_viewport=False, layer="", scene = scen)
+        try:
+            bpy.ops.render.render(animation=False, write_still=True, use_viewport=False, layer="", scene = scen)
+        finally:
+            # Unregister handlers
+            for handler_list, handler in (
+                (bpy.app.handlers.render_stats, on_render_stats),
+                (bpy.app.handlers.render_complete, on_render_complete),
+                (bpy.app.handlers.render_cancel, on_render_cancel),
+            ):
+                try:
+                    handler_list.remove(handler)
+                except ValueError:
+                    pass
+
+            # Write final progress
+            final_elapsed = time.time() - render_start_time
+            write_progress(str(id), render_stats_total, render_stats_total,
+                           _PHASE_NAMES[-1], final_elapsed, 0.0)
+
+            # Cleanup progress file after a short delay to allow client to read it
+            import time as time_module
+            time_module.sleep(0.5)
+            if progress_file_path:
+                try:
+                    if os.path.exists(progress_file_path):
+                        os.remove(progress_file_path)
+                except:
+                    pass
+            progress_file_path = None
+            render_task_id = None
 
         print("SUCCESS:" + str(id) + "\n", flush=True);
 

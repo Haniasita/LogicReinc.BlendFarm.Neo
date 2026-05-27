@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -66,7 +66,8 @@ namespace LogicReinc.BlendFarm.Windows
 
         private void HandleNewLog(RenderNode node, string log)
         {
-            Dispatcher.UIThread.InvokeAsync(()=> {
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
                 _log.Text = _log.Text + "\n" + log;
                 _scroller.ScrollToEnd();
             });

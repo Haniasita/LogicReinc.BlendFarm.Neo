@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Shared;
+using LogicReinc.BlendFarm.Shared;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

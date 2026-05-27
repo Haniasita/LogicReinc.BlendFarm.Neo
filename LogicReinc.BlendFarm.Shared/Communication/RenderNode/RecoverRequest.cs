@@ -20,3 +20,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public string[] SessionIDs { get; set; } = new string[0];
     }
 }
+
+

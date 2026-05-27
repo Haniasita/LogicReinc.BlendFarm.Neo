@@ -5,7 +5,7 @@ using System.Text;
 namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
 {
     [BlendFarmHeader("peek")]
-    public class BlenderPeekRequest: BlendFarmMessage
+    public class BlenderPeekRequest : BlendFarmMessage
     {
         public string SessionID { get; set; }
         public string Version { get; set; }
@@ -32,3 +32,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
 
     }
 }
+
+

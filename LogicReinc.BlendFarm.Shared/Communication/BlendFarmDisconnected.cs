@@ -11,3 +11,4 @@ namespace LogicReinc.BlendFarm.Shared.Communication
         public string Reason { get; set; }
     }
 }
+

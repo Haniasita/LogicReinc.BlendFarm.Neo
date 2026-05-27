@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
+using LogicReinc.BlendFarm.Client;
 using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Models;
 using System;
@@ -106,7 +107,7 @@ namespace LogicReinc.BlendFarm.Objects
                 {
                     ApplyUISettings(BlendFarmSettings.Instance.UISettings);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to apply default settings..due to {ex.Message}. Ignoring defaults");
                 }
@@ -188,7 +189,7 @@ namespace LogicReinc.BlendFarm.Objects
 
         internal void TriggerPropertyChange(params string[] props)
         {
-            foreach(string prop in props)
+            foreach (string prop in props)
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 

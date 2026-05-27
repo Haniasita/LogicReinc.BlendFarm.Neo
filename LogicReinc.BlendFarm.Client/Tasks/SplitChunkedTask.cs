@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.ImageTypes;
+using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
 using System;
 using System.Collections.Concurrent;
@@ -39,8 +39,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                 //Assume every core has the same performance..
                 while (queue.Count > 0)
                 {
-                    RenderSubTask nextTask = null;
-                    queue.TryDequeue(out nextTask); //Single threaded, always true
+                    queue.TryDequeue(out RenderSubTask nextTask); //Single threaded, always true
 
                     RenderNode nextNode = _usedNodes.OrderBy(node =>
                     {
@@ -63,7 +62,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                         {
                             SubTaskBatchResult resp = ExecuteSubTasks(node, (rsbt, rbr) =>
                             {
-                                using(Image img = ImageConverter.Convert(rbr.Data, Settings.RenderFormat))
+                                using (Image img = ImageTypes.ImageConverter.Convert(rbr.Data, Settings.RenderFormat))
                                     ProcessTile(rsbt, img, ref g, ref result, ref drawLock);
 
                                 ChangeProgress(Progress + rsbt.Value);
@@ -71,7 +70,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                             if (resp?.Exception != null)
                                 node.UpdateException(resp.Exception.Message);
                         }
-                        catch (TaskCanceledException ex)
+                        catch (TaskCanceledException)
                         {
                             node.UpdateException("Cancelled");
                             return;
@@ -86,15 +85,13 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                         }
                     });
 
-                    if (g != null)
-                        g.Dispose();
+                    g?.Dispose();
                     return result;
                 });
             }
             finally
             {
-                if (g != null)
-                    g.Dispose();
+                g?.Dispose();
             }
             FinalImage = result;
 
@@ -102,3 +99,4 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         }
     }
 }
+

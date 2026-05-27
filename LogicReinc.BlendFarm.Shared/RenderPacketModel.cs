@@ -139,3 +139,4 @@ namespace LogicReinc.BlendFarm.Shared
         public bool Workaround { get; set; }
     }
 }
+

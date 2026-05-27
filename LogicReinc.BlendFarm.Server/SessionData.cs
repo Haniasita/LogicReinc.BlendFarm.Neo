@@ -106,12 +106,12 @@ namespace LogicReinc.BlendFarm.Server
                 {
                     ses.Delete();
                 }
-                catch (Exception ex) { }
+                catch { }
         }
         public static async Task CleanUpDelayed(int ms, params string[] args)
         {
             List<SessionData> sessions = null;
-            lock(Sessions)
+            lock (Sessions)
                 sessions = args.Distinct().Where(x => Sessions.ContainsKey(x)).Select(x => Sessions[x]).ToList();
 
             foreach (SessionData ses in sessions)
@@ -124,7 +124,7 @@ namespace LogicReinc.BlendFarm.Server
                     if (!ses.InUse)
                         ses.Delete();
                 }
-                catch (Exception ex) { }
+                catch { }
         }
 
         /// <summary>
@@ -183,3 +183,5 @@ namespace LogicReinc.BlendFarm.Server
         }
     }
 }
+
+

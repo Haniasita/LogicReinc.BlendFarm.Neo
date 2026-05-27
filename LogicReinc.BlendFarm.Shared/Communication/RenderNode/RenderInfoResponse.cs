@@ -16,5 +16,12 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
 
         public int Time { get; set; }
         public int TimeRemaining { get; set; }
+
+        // Render phase label ("Loading", "Rendering", "Saving"). Cycles
+        // reuses the N/M counter for each phase, so the bar visibly cycles
+        // 0→100% three times; the label disambiguates which one.
+        public string Phase { get; set; }
     }
 }
+
+

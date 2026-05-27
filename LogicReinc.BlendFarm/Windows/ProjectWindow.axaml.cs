@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -24,7 +24,7 @@ namespace LogicReinc.BlendFarm.Windows
     /// </summary>
     public class ProjectWindow : Window, INotifyPropertyChanged
     {
-        static List<BlenderVersion> versions = new List<BlenderVersion>();
+        static List<BlenderVersion> versions = [];
 
         private TextBox fileSelection = null;
         private ComboBox comboVersions = null;
@@ -38,22 +38,22 @@ namespace LogicReinc.BlendFarm.Windows
 
         private bool _startedNew = false;
 
-        private string _os = null;
-        private BlendFarmManager _manager = null;
+        private readonly string _os;
+        private BlendFarmManager _manager;
 
-        private Dictionary<string, (string,string,int)> _previouslyFoundNodes = new Dictionary<string, (string, string, int)>();
+        private readonly Dictionary<string, (string, string, int)> _previouslyFoundNodes = [];
 
-        private bool _noServer = false;
+        private readonly bool _noServer = false;
 
-        public List<Announcement> Announcements { get; set; } = new List<Announcement>();
+        public List<Announcement> Announcements { get; set; } = [];
         public Announcement LastAnnouncement { get; set; } = null;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public new event PropertyChangedEventHandler PropertyChanged;
 
         public ProjectWindow()
         {
             DataContext = this;
-            using(Stream icoStream = Program.GetIconStream())
+            using (Stream icoStream = Program.GetIconStream())
             {
                 this.Icon = new WindowIcon(icoStream);
             }
@@ -64,7 +64,7 @@ namespace LogicReinc.BlendFarm.Windows
                 Console.WriteLine("OS: " + _os);
                 _noServer = false;// _os == SystemInfo.OS_MACOS;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("No server due to:" + ex.Message);
                 _noServer = true;
@@ -74,7 +74,7 @@ namespace LogicReinc.BlendFarm.Windows
             {
                 LocalServer.OnServerException += (a, b) =>
                 {
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    _ = Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         MessageWindow.Show(this, "Local Server Failure",
                             $@"Local server failed to start, if you're already using a port, change it in settings. 
@@ -84,7 +84,7 @@ Or if you're running this program twice, ignore I guess.
                 };
                 LocalServer.OnBroadcastException += (a, b) =>
                 {
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    _ = Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         MessageWindow.Show(this, "Local Broadcast Failure",
                             $@"Local Server failed to broadcast or receive broadcasts for auto-discovery.  It can be changed in settings.
@@ -94,8 +94,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 };
                 LocalServer.OnDiscoveredServer += (name, address, port) =>
                 {
-                    if (_manager != null)
-                        _manager.TryAddDiscoveryNode(name, address, port);
+                    _manager?.TryAddDiscoveryNode(name, address, port);
                 };
                 LocalServer.Start();
                 Closed += (a, b) =>
@@ -112,12 +111,10 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 try
                 {
                     Console.WriteLine("Fetching announcements from repo");
-                    List<Announcement> announcements = Announcement.GetAnnouncements(Constants.AnnouncementUrl);
-                    if (announcements == null)
-                        throw new InvalidDataException("No valid data found");
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    List<Announcement> announcements = Announcement.GetAnnouncements(Constants.AnnouncementUrl) ?? throw new InvalidDataException("No valid data found");
+                    _ = Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Announcements = announcements?.OrderByDescending(x => x.Date).ToList() ?? new List<Announcement>();
+                        Announcements = announcements?.OrderByDescending(x => x.Date).ToList() ?? [];
                         Announcement lastAnn = Announcements?.OrderByDescending(x => x.Date)?.FirstOrDefault();
                         LastAnnouncement = lastAnn;
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LastAnnouncement)));
@@ -130,7 +127,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                         }
                     });
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkRed;
                     Console.WriteLine($"Failed to fetch announcements due to \"{ex.Message}\" (Attempted to fetch from {Constants.AnnouncementUrl})");
@@ -163,7 +160,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
             useAssetSync.IsChecked = BlendFarmSettings.Instance.Option_UseAssetsSync;
             connectLocal.IsChecked = BlendFarmSettings.Instance.Option_ConnectLocal;
             importSettings.IsChecked = BlendFarmSettings.Instance.Option_ImportSettings;
-            if(_noServer)
+            if (_noServer)
             {
                 connectLocal.IsChecked = false;
                 connectLocal.IsEnabled = false;
@@ -184,7 +181,8 @@ This may have to do with the port being in use. Note that to discover other pcs 
             history = this.FindControl<ListBox>("history");
             history.Items = BlendFarmSettings.Instance.History.ToList();
             history.SelectedItem = null;
-            history.SelectionChanged += (a, b) =>{
+            history.SelectionChanged += (a, b) =>
+            {
                 if (b.AddedItems.Count > 0)
                 {
                     string list = ((HistoryEntry)b.AddedItems[0]).Path;
@@ -194,7 +192,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 }
             };
 
-            if(_noServer)
+            if (_noServer)
                 MessageWindow.Show(this, "OSX Rendering", "Rendering using Blender is disabled for OSX due to it not being implemented fully yet. You can however render using other machines in your network. (Local render node will not be available)");
         }
 
@@ -205,22 +203,20 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 Console.WriteLine("Fetching versions from cache or remote");
 
                 string versionCache = SystemInfo.RelativeToApplicationDirectory("VersionCache");
-                if (!new FileInfo(versionCache).FullName.ToLower().StartsWith("c:\\windows\\system32"))
-                    versions = BlenderVersion.GetBlenderVersions(versionCache, SystemInfo.RelativeToApplicationDirectory("VersionCustom"))
-                        .OrderByDescending(x => x.Name)
-                        .ToList();
+                if (!new FileInfo(versionCache).FullName.StartsWith("c:\\windows\\system32", StringComparison.OrdinalIgnoreCase))
+                    versions = [.. BlenderVersion.GetBlenderVersions(versionCache, SystemInfo.RelativeToApplicationDirectory("VersionCustom")).OrderByDescending(x => x.Name)];
                 else
-                    versions = new List<BlenderVersion>()
-                    {
-                        new BlenderVersion()
+                    versions =
+                    [
+                        new()
                         {
                             Name = "Fake Version"
                         }
-                    };
+                    ];
             }
             catch (Exception ex)
             {
-                MessageWindow.Show(this, "Exception retrieving versions", 
+                MessageWindow.Show(this, "Exception retrieving versions",
                     $"Failed to retrieve versions due to {ex.Message}, this may be due to no internet connection.An internet connection is required to retrieve version info and download Blender installations. Restart application with internet connection for Blender versions..",
                     600, 250);
             }
@@ -241,14 +237,16 @@ This may have to do with the port being in use. Note that to discover other pcs 
         }
         public async void ShowFileDialog()
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Title = "Select your Blendfile";
-            dialog.Filters.Add(new FileDialogFilter()
+            OpenFileDialog dialog = new()
+            {
+                Title = "Select your Blendfile",
+                AllowMultiple = false,
+            };
+            dialog.Filters.Add(new()
             {
                 Name = "Blender File",
                 Extensions = { "blend" }
             });
-            dialog.AllowMultiple = false;
 
             Console.Write("Showing OpenFileDialog");
 
@@ -262,10 +260,10 @@ This may have to do with the port being in use. Note that to discover other pcs 
             //        AllowDirectorySelection = false
             //    });
             //else
-                results = await dialog.ShowAsync(this);
+            results = await dialog.ShowAsync(this);
 
             results = results?.Select(x => Statics.SanitizePath(x)).ToArray();
-            
+
 
             if (results == null)
                 Console.WriteLine("ShowFileDialog Results: null");
@@ -281,7 +279,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
 
         private void ShowLoadProjectUI(bool show)
         {
-            if(show)
+            if (show)
             {
                 loadProjectUI.IsVisible = true;
                 loadingUI.IsVisible = false;
@@ -323,7 +321,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 Date = DateTime.Now
             });
             BlendFarmSettings.Instance.LastVersion = version.Name;
-            BlendFarmSettings.Instance.History = BlendFarmSettings.Instance.History.OrderByDescending(x => x.Date).Take(10).ToList();
+            BlendFarmSettings.Instance.History = [.. BlendFarmSettings.Instance.History.OrderByDescending(x => x.Date).Take(10)];
             BlendFarmSettings.Instance.Option_ConnectLocal = connectLocal.IsChecked ?? false;
             BlendFarmSettings.Instance.Option_ImportSettings = importSettings.IsChecked ?? false;
             BlendFarmSettings.Instance.Option_UseAssetsSync = useAssetSync.IsChecked ?? false;
@@ -335,7 +333,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
             //Setup manager
             _manager = new BlendFarmManager(path, version.Name, null, localPath);
 
-            if(!_noServer && !BlendFarmSettings.Instance.PastClients.Any(x=>x.Key == BlendFarmManager.LocalNodeName))
+            if (!_noServer && !BlendFarmSettings.Instance.PastClients.Any(x => x.Key == BlendFarmManager.LocalNodeName))
                 _manager.AddNode(BlendFarmManager.LocalNodeName, $"localhost:{LocalServer.ServerPort}", RenderType.CPU, ServerSettings.Instance.BasicSecurityPassword);
 
             foreach (var pair in BlendFarmSettings.Instance.PastClients.ToList())
@@ -355,7 +353,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 {
                     if (!LocalServer.Manager.TryPrepare(version.Name))
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        _ = Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             MessageWindow.Show(this, "Failed to prepare Blender version", "Asset sync requires local Blender, but failed to download it");
                             ShowLoadProjectUI(true);
@@ -363,9 +361,9 @@ This may have to do with the port being in use. Note that to discover other pcs 
                     }
                     else
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        _ = Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            new RenderWindow(_manager, version, path, null, new RenderWindowOptions()
+                            new RenderWindow(_manager, version, path, null, new()
                             {
                                 WithAssetSync = true,
                                 ConnectLocal = connectLocal.IsChecked ?? false,
@@ -376,12 +374,13 @@ This may have to do with the port being in use. Note that to discover other pcs 
                     }
                 });
             }
-            else {
+            else
+            {
                 loadingText.Text = "Starting";
 
                 //Start render window
                 //new RenderWindow();
-                new RenderWindow(_manager, version, path, null, new RenderWindowOptions()
+                new RenderWindow(_manager, version, path, null, new()
                 {
                     WithAssetSync = false,
                     ConnectLocal = connectLocal.IsChecked ?? false,
@@ -394,8 +393,8 @@ This may have to do with the port being in use. Note that to discover other pcs 
 
         public void OpenLastAnnouncement()
         {
-            if(Announcements != null)
-            new AnnouncementWindow(Announcements).Show();
+            if (Announcements != null)
+                new AnnouncementWindow(Announcements).Show();
         }
     }
 }

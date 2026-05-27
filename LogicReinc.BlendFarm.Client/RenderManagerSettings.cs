@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Shared;
+using LogicReinc.BlendFarm.Shared;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -48,7 +48,7 @@ namespace LogicReinc.BlendFarm.Client
         /// <summary>
         /// Chunk Height (0..1), used when render is divided into chunks (Chunked, SplitChunked)
         /// </summary>
-        public decimal ChunkHeight { get; set; } = Math.Round(((decimal)(256) / 1080),4); //0.066
+        public decimal ChunkHeight { get; set; } = Math.Round(((decimal)(256) / 1080), 4); //0.066
         /// <summary>
         /// Chunk Width (0..1), used when render is divided into chunks (Chunked, SplitChunked)
         /// </summary>

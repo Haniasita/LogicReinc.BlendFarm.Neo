@@ -20,3 +20,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public bool GPU { get; set; } = false; //Not implemented
     }
 }
+
+

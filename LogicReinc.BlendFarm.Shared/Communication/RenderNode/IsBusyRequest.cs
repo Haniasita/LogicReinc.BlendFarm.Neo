@@ -14,3 +14,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public bool IsBusy { get; set; }
     }
 }
+
+

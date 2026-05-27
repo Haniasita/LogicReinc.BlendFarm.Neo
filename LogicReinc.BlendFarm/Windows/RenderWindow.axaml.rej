@@ -1,0 +1,11 @@
+--- LogicReinc.BlendFarm/Windows/RenderWindow.axaml
++++ LogicReinc.BlendFarm/Windows/RenderWindow.axaml
+@@ -167,7 +167,7 @@
+                               </StackPanel>
+ 
+                               <!--RenderNode Buttons -->
+-									<StackPanel Orientation="Vertical">
++									<StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+                                       <DockPanel>
+                                           <Button
+                                             Margin="5,0,0,0"

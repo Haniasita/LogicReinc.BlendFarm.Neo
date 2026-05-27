@@ -136,7 +136,7 @@ namespace LogicReinc.BlendFarm.Shared
                 Cache.UpdateCache(vs, cacheFile);
                 return custom.Concat(vs).ToList();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("Failed to load versions due to " + ex.Message);
                 if (cache != null)
@@ -285,7 +285,7 @@ namespace LogicReinc.BlendFarm.Shared
 
             public static void UpdateCache(List<BlenderVersion> versions, string cacheFile = null)
             {
-                if(cacheFile == null)
+                if (cacheFile == null)
                     cacheFile = "VersionCache";
                 File.WriteAllText(cacheFile, JsonSerializer.Serialize(new Cache()
                 {
@@ -296,3 +296,4 @@ namespace LogicReinc.BlendFarm.Shared
         }
     }
 }
+

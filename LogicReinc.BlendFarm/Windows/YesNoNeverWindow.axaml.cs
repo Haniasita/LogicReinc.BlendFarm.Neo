@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using System;
@@ -75,7 +75,7 @@ namespace LogicReinc.BlendFarm.Windows
 
             await window.ShowDialog(owner);
 
-            if(window.Never)
+            if (window.Never)
                 return (window.Response) ? YesNoNever.Always : YesNoNever.Never;
             else
                 return (window.Response) ? YesNoNever.Yes : YesNoNever.No;

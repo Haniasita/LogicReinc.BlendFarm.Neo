@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.Exceptions;
+using LogicReinc.BlendFarm.Client.Exceptions;
 using LogicReinc.BlendFarm.Shared.Communication;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
 using System;
@@ -19,14 +19,14 @@ namespace LogicReinc.BlendFarm.Client
     /// </summary>
     public class RenderClient
     {
-        private int bufferSize = 1024;
+        private readonly int bufferSize = 1024;
 
-        private CancellationToken _receivingToken = new CancellationToken();
+        private readonly CancellationToken _receivingToken = new CancellationToken();
 
         private TcpRenderClient Socket = null;
         public string Address { get; set; }
         public int Port { get; set; }
-        private Dictionary<string, Action<BlendFarmMessage>> _respHandlers = new Dictionary<string, Action<BlendFarmMessage>>();
+        private readonly Dictionary<string, Action<BlendFarmMessage>> _respHandlers = new Dictionary<string, Action<BlendFarmMessage>>();
 
         public bool Connected { get; set; }
 
@@ -59,7 +59,7 @@ namespace LogicReinc.BlendFarm.Client
             RenderClient client = new RenderClient(address);
             client.OnPacket += (packClient, pack) =>
             {
-                if(pack is BlendFarmDisconnected packDis)
+                if (pack is BlendFarmDisconnected packDis)
                 {
                     client._lastDisconnectIsError = packDis.IsError;
                     client._lastDisconnectReason = packDis.Reason;
@@ -115,7 +115,7 @@ namespace LogicReinc.BlendFarm.Client
 
             if (response is BlendFarmDisconnected respDisc)
             {
-                if(string.IsNullOrEmpty(respDisc.Reason))
+                if (string.IsNullOrEmpty(respDisc.Reason))
                     throw new BlendFarmDisconnectedException()
                     {
                         IsError = respDisc.IsError,
@@ -135,8 +135,7 @@ namespace LogicReinc.BlendFarm.Client
         private void HandleConnected()
         {
             Connected = true;
-            if (OnConnected != null)
-                OnConnected(this);
+            OnConnected?.Invoke(this);
         }
         private void HandleDisconnected()
         {
@@ -165,21 +164,20 @@ namespace LogicReinc.BlendFarm.Client
             Socket = await TcpRenderClient.Connect(Address, Port);
             Socket.OnMessage += (c, packetObj) =>
             {
-                if (OnPacket != null)
-                    OnPacket(this, packetObj);
+                OnPacket?.Invoke(this, packetObj);
 
                 if (packetObj.ResponseID != null && _respHandlers.ContainsKey(packetObj.ResponseID))
                 {
                     Action<BlendFarmMessage> respHandler = _respHandlers[packetObj.ResponseID];
                     _respHandlers.Remove(packetObj.ResponseID);
 
-                    respHandler.Invoke(packetObj);
+                    respHandler(packetObj);
                 }
             };
             Socket.OnDisconnected += (c) => HandleDisconnected();
 
             HandleConnected();
-            
+
             return true;
         }
         public void Disconnect()

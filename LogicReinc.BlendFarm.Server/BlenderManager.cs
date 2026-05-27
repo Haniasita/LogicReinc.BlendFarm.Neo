@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Shared;
+using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
 using LogicReinc.BlendFarm.Shared.Models;
 using SharpCompress.Readers;
@@ -29,7 +29,7 @@ namespace LogicReinc.BlendFarm.Server
         public const int CONTINUE_TIMEOUT = 60000;
         public const bool USE_CONTINUATION = true;
 
-        private object _renderLock = new object();
+        private readonly object _renderLock = new();
 
         public BlenderProcess RenderProcess { get; private set; }
         public string RenderSession { get; private set; }
@@ -127,7 +127,7 @@ namespace LogicReinc.BlendFarm.Server
         /// <summary>
         /// Returns OS version, Blender formatted (eg. windows64, linux64)
         /// </summary>
-        public string GetOSVersion()
+        public static string GetOSVersion()
         {
             return SystemInfo.GetOSName();
         }
@@ -183,7 +183,7 @@ namespace LogicReinc.BlendFarm.Server
                 Prepare(version, onProgress);
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("TryPrepare failed due to: " + ex.Message);
                 return false;
@@ -195,11 +195,7 @@ namespace LogicReinc.BlendFarm.Server
         /// <param name="version"></param>
         public void Prepare(string version, Action<string, double> onProgress = null)
         {
-            BlenderVersion v = BlenderVersion.FindVersion(version, SystemInfo.RelativeToApplicationDirectory("VersionCache"), SystemInfo.RelativeToApplicationDirectory("VersionCustom"));
-
-            if (v == null)
-                throw new ArgumentException("Version not found");
-
+            BlenderVersion v = BlenderVersion.FindVersion(version, SystemInfo.RelativeToApplicationDirectory("VersionCache"), SystemInfo.RelativeToApplicationDirectory("VersionCustom")) ?? throw new ArgumentException("Version not found");
             string targetDir = GetVersionPath(version, SystemInfo.GetOSName());
 
             if (Directory.Exists(targetDir))
@@ -248,7 +244,7 @@ namespace LogicReinc.BlendFarm.Server
                 Directory.CreateDirectory(GetBlenderDataPath());
 
                 /*
-                using (WebClient client = new WebClient())
+                using (WebClient client = new())
                 {
                     Console.WriteLine($"Downloading {version.Name}...");
                     int lastPercentage = 0;
@@ -274,7 +270,7 @@ namespace LogicReinc.BlendFarm.Server
 
                 Console.WriteLine($"{version.Name} ready");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Exception during extraction:" + ex.Message);
                 if (Directory.Exists(GetVersionPath(version.Name, os)))
@@ -300,7 +296,7 @@ namespace LogicReinc.BlendFarm.Server
                 Directory.CreateDirectory(blenderDataPath);
 
                 /*
-                using (WebClient client = new WebClient())
+                using (WebClient client = new())
                 {
                     Console.WriteLine($"Downloading {version.Name}...");
                     int lastPercentage = 0;
@@ -319,9 +315,9 @@ namespace LogicReinc.BlendFarm.Server
                 Console.WriteLine($"Extracting {version.Name}...");
 
                 onProgress?.Invoke("Extracting", -1);
-                List<(string, string)> links = new List<(string, string)>();
+                List<(string, string)> links = [];
                 string currentDir = "";
-                using (FileStream str = new FileStream(archivePath, FileMode.Open))
+                using (FileStream str = new(archivePath, FileMode.Open))
                 using (var reader = ReaderFactory.Open(str))
                 {
                     while (reader.MoveToNextEntry())
@@ -378,7 +374,7 @@ namespace LogicReinc.BlendFarm.Server
                 }.WaitAndPrint();
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (Directory.Exists(GetVersionPath(version.Name, os)))
                     Directory.Delete(GetVersionPath(version.Name, os));
@@ -401,7 +397,7 @@ namespace LogicReinc.BlendFarm.Server
                 Directory.CreateDirectory(GetBlenderDataPath());
 
                 /*
-                using (WebClient client = new WebClient())
+                using (WebClient client = new())
                 {
                     Console.WriteLine($"Downloading {version.Name}...");
                     int lastPercentage = 0;
@@ -426,9 +422,9 @@ namespace LogicReinc.BlendFarm.Server
 
                 onProgress?.Invoke("Extracting", -1);
                 Console.WriteLine($"Mounting [{archivePath}] to [{imagePath}]");
-                Process mountProcess = new Process()
+                Process mountProcess = new()
                 {
-                    StartInfo = new ProcessStartInfo()
+                    StartInfo = new()
                     {
                         FileName = "hdiutil",
                         Arguments = $"attach -mountpoint \"{imagePath}\" \"{archivePath}\"",
@@ -447,9 +443,9 @@ namespace LogicReinc.BlendFarm.Server
                 CopyRecursive(Path.Combine(imagePath, "Blender.app"), versionPath);
 
                 Console.WriteLine("Unmounting");
-                Process unmountProcess = new Process()
+                Process unmountProcess = new()
                 {
-                    StartInfo = new ProcessStartInfo()
+                    StartInfo = new()
                     {
                         FileName = "hdiutil",
                         Arguments = $"detach \"{imagePath}\"",
@@ -464,7 +460,7 @@ namespace LogicReinc.BlendFarm.Server
 
                 Console.WriteLine($"{version.Name} ready");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (Directory.Exists(GetVersionPath(version.Name, os)))
                     Directory.Delete(GetVersionPath(version.Name, os));
@@ -486,20 +482,8 @@ namespace LogicReinc.BlendFarm.Server
             {
                 Directory.CreateDirectory(GetBlenderDataPath());
 
-                using (WebClient client = new WebClient())
-                {
-                    Console.WriteLine($"Downloading {version.Name}...");
-                    int lastPercentage = 0;
-                    client.DownloadProgressChanged += (s, e) =>
-                    {
-                        if (e.ProgressPercentage > lastPercentage)
-                        {
-                            lastPercentage = e.ProgressPercentage;
-                            Console.WriteLine($"Downloading {version.Name} [{lastPercentage}%]...");
-                        }
-                    };
-                    client.DownloadFile(version.UrlMacOSARM64, archivePath);
-                }
+                Console.WriteLine($"Downloading {version.Name}...");
+                DownloadInternal(version.UrlMacOSARM64, archivePath);
                 Console.WriteLine($"Extracting {version.Name}...");
 
                 string versionPath = GetVersionPath(version.Name, os);
@@ -508,9 +492,9 @@ namespace LogicReinc.BlendFarm.Server
                 Directory.CreateDirectory(imagePath);
 
                 Console.WriteLine($"Mounting [{archivePath}] to [{imagePath}]");
-                Process mountProcess = new Process()
+                Process mountProcess = new()
                 {
-                    StartInfo = new ProcessStartInfo()
+                    StartInfo = new()
                     {
                         FileName = "hdiutil",
                         Arguments = $"attach -mountpoint \"{imagePath}\" \"{archivePath}\"",
@@ -529,9 +513,9 @@ namespace LogicReinc.BlendFarm.Server
                 CopyRecursive(Path.Combine(imagePath, "Blender.app"), versionPath);
 
                 Console.WriteLine("Unmounting");
-                Process unmountProcess = new Process()
+                Process unmountProcess = new()
                 {
-                    StartInfo = new ProcessStartInfo()
+                    StartInfo = new()
                     {
                         FileName = "hdiutil",
                         Arguments = $"detach \"{imagePath}\"",
@@ -546,7 +530,7 @@ namespace LogicReinc.BlendFarm.Server
 
                 Console.WriteLine($"{version.Name} ready");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (Directory.Exists(GetVersionPath(version.Name, os)))
                     Directory.Delete(GetVersionPath(version.Name, os));
@@ -555,44 +539,40 @@ namespace LogicReinc.BlendFarm.Server
             }
         }
 
-        private void DownloadInternal(string url, string path, Action<string, double> onProgress = null)
+        private static void DownloadInternal(string url, string path, Action<string, double> onProgress = null)
         {
             double percentageCom = 0.1;
             Task.Run(async () =>
             {
-                using (HttpClient client = new HttpClient())
+                using HttpClient client = new();
+                HttpResponseMessage resp = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                long length = resp.Content.Headers.ContentLength ?? 0L;
+                long lengthMb = length / 1000 / 1000;
+
+                if (length == 0)
+                    Console.WriteLine("Unknown size, cannot provide progress..");
+
+                Stream stream = await resp.Content.ReadAsStreamAsync();
+
+                byte[] buffer = new byte[4096];
+                using FileStream fstr = new(path, FileMode.Create);
+                using Stream str = stream;
+                int written = 0;
+                double lastCom = 0;
+                int read = 0;
+                while ((read = str.Read(buffer, 0, buffer.Length)) != 0)
                 {
-                    HttpResponseMessage resp = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                    long length = resp.Content.Headers.ContentLength ?? 0L;
-                    long lengthMb = length / 1000 / 1000;
+                    fstr.Write(buffer, 0, read);
+                    written += read;
 
-                    if (length == 0)
-                        Console.WriteLine("Unknown size, cannot provide progress..");
-
-                    Stream stream = await resp.Content.ReadAsStreamAsync();
-
-                    byte[] buffer = new byte[4096];
-                    using (FileStream fstr = new FileStream(path, FileMode.Create))
-                    using (Stream str = stream)
+                    if (length > 0)
                     {
-                        int written = 0;
-                        double lastCom = 0;
-                        int read = 0;
-                        while ((read = str.Read(buffer, 0, buffer.Length)) != 0)
+                        double progress = ((double)written / length);
+                        if (progress > lastCom + percentageCom)
                         {
-                            fstr.Write(buffer, 0, read);
-                            written += read;
-
-                            if (length > 0)
-                            {
-                                double progress = ((double)written / length);
-                                if (progress > lastCom + percentageCom)
-                                {
-                                    lastCom = progress;
-                                    Console.WriteLine($"Progress ({Math.Floor(progress * 100)}%, {written / (1000*1000)}MB/{lengthMb}MB)");
-                                    onProgress?.Invoke($"Downloading", progress);
-                                }
-                            }
+                            lastCom = progress;
+                            Console.WriteLine($"Progress ({Math.Floor(progress * 100)}%, {written / (1000 * 1000)}MB/{lengthMb}MB)");
+                            onProgress?.Invoke($"Downloading", progress);
                         }
                     }
                 }
@@ -629,7 +609,7 @@ namespace LogicReinc.BlendFarm.Server
         /// </summary>
         public string Render(string version, string file, BlenderRenderSettings settings, long fileId = -1, Action<BlenderProcess> beforeStart = null, Action<BlenderProcess> beforeEnd = null)
         {
-            return RenderBatch(version, file, new[] { settings }, fileId, beforeStart, beforeEnd).FirstOrDefault();
+            return RenderBatch(version, file, [settings], fileId, beforeStart, beforeEnd).FirstOrDefault();
         }
         /// <summary>
         /// Renders a batch of render settings in a single Blender instance.
@@ -644,7 +624,7 @@ namespace LogicReinc.BlendFarm.Server
             }
 
             //Does an ongoing render process match Blender, File, and File version
-            if(RenderProcess != null && RenderProcess.Active && RenderProcess.IsContinueing && 
+            if (RenderProcess != null && RenderProcess.Active && RenderProcess.IsContinueing &&
                 (version != RenderProcess.Version || file != RenderProcess.File || RenderProcess.FileID != fileId))
             {
                 Console.WriteLine("Old continueing RenderProcess, cancelling..");
@@ -679,23 +659,19 @@ namespace LogicReinc.BlendFarm.Server
                         RenderProcess = new BlenderProcess(cmd, arg, version, file, fileId);
 
 
-                        if (beforeStart != null)
-                            beforeStart(RenderProcess);
-                        RenderProcess.Run();
-                        if (beforeEnd != null)
-                            beforeEnd(RenderProcess);
+                        beforeStart?.Invoke(RenderProcess);
+                        _ = RenderProcess.Run();
+                        beforeEnd?.Invoke(RenderProcess);
                     }
                     else
                     {
-                        if (beforeStart != null)
-                            beforeStart(RenderProcess);
+                        beforeStart?.Invoke(RenderProcess);
                         RenderProcess.Continue(path);
-                        if (beforeEnd != null)
-                            beforeEnd(RenderProcess);
+                        beforeEnd?.Invoke(RenderProcess);
                     }
 
                 });
-                return batch.Select(x => FindOutput(x.Output)).Where(x=>x != null).ToList();
+                return [.. batch.Select(x => FindOutput(x.Output)).Where(x => x != null)];
             }
             finally
             {
@@ -713,7 +689,7 @@ namespace LogicReinc.BlendFarm.Server
             string cmd = GetVersionCommand(version);
             string arg = $"--factory-startup -noaudio -b \"{Path.GetFullPath(file)}\" -P \"{GetPeekScriptPath()}\"";
 
-            BlenderProcess process = new BlenderProcess(cmd, arg, version, file, fileId);
+            BlenderProcess process = new(cmd, arg, version, file, fileId);
 
             BlenderProcess.Result result = process.Run();
             if (result.Exceptions.Length > 0)
@@ -731,14 +707,14 @@ namespace LogicReinc.BlendFarm.Server
             string cmd = GetVersionCommand(version);
             string arg = $"--factory-startup -noaudio -b \"{Path.GetFullPath(file)}\" -P \"{GetExtractDependenciesScriptPath()}\"";
 
-            BlenderProcess process = new BlenderProcess(cmd, arg, version, file, fileId);
+            BlenderProcess process = new(cmd, arg, version, file, fileId);
 
             BlenderProcess.Result result = process.Run();
             if (result.Exceptions.Length > 0)
                 throw new Exception("Failed: " + string.Join(", ", result.Exceptions));
 
-            List<FileDependency> deps = new List<FileDependency>();
-            foreach(string res in result.Results)
+            List<FileDependency> deps = [];
+            foreach (string res in result.Results)
                 deps.Add(JsonSerializer.Deserialize<FileDependency>(res));
 
             return deps;
@@ -759,7 +735,7 @@ namespace LogicReinc.BlendFarm.Server
                 //Finalize Settings
                 if (settings == null)
                 {
-                    settings = new BlenderRenderSettings();
+                    settings = new();
                     batch[i] = settings;
                 }
 
@@ -790,8 +766,7 @@ namespace LogicReinc.BlendFarm.Server
                 }
 
 
-                if (settings.TaskID == null)
-                    settings.TaskID = Guid.NewGuid().ToString();
+                settings.TaskID ??= Guid.NewGuid().ToString();
 
                 string outputPath = settings.Output;
 
@@ -802,8 +777,7 @@ namespace LogicReinc.BlendFarm.Server
                     outputPath = Path.Combine(RenderData, outputName);
                 }
 
-                if (settings.Output == null)
-                    settings.Output = outputPath;
+                settings.Output ??= outputPath;
 
                 settings.Output = Path.GetFullPath(outputPath);
             }
@@ -828,11 +802,9 @@ namespace LogicReinc.BlendFarm.Server
                 var assembly = Assembly.GetExecutingAssembly();
                 var resourceName = "LogicReinc.BlendFarm.Server.render.py";
 
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    _scriptRender = reader.ReadToEnd();
-                }
+                using Stream stream = assembly.GetManifestResourceStream(resourceName);
+                using StreamReader reader = new(stream);
+                _scriptRender = reader.ReadToEnd();
             }
             return _scriptRender;
         }
@@ -847,11 +819,9 @@ namespace LogicReinc.BlendFarm.Server
                 var assembly = Assembly.GetExecutingAssembly();
                 var resourceName = "LogicReinc.BlendFarm.Server.peek.py";
 
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    _scriptPeek = reader.ReadToEnd();
-                }
+                using Stream stream = assembly.GetManifestResourceStream(resourceName);
+                using StreamReader reader = new(stream);
+                _scriptPeek = reader.ReadToEnd();
             }
             return _scriptPeek;
         }
@@ -866,11 +836,10 @@ namespace LogicReinc.BlendFarm.Server
                 var assembly = Assembly.GetExecutingAssembly();
                 var resourceName = "LogicReinc.BlendFarm.Server.extract_dependencies.py";
 
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    _scriptExtract = reader.ReadToEnd();
-                }
+                Stream stream1 = assembly.GetManifestResourceStream(resourceName);
+                using Stream stream = stream1;
+                using StreamReader reader = new(stream);
+                _scriptExtract = reader.ReadToEnd();
             }
             return _scriptExtract;
         }
@@ -892,8 +861,8 @@ namespace LogicReinc.BlendFarm.Server
                 File.Delete(filePath);
             }
         }
-    
-    
+
+
         /// <summary>
         /// Recursively copies directory dir to dest
         /// </summary>
@@ -901,14 +870,14 @@ namespace LogicReinc.BlendFarm.Server
         /// <param name="dest">Destination</param>
         private static void CopyRecursive(string dir, string dest)
         {
-            DirectoryInfo info = new DirectoryInfo(dir);
+            DirectoryInfo info = new(dir);
 
             if (!info.Exists)
                 throw new DirectoryNotFoundException(dir);
 
             Directory.CreateDirectory(dest);
 
-            DirectoryInfo destInfo = new DirectoryInfo(dest);
+            DirectoryInfo destInfo = new(dest);
 
             foreach (FileInfo file in info.GetFiles())
             {
@@ -938,3 +907,5 @@ namespace LogicReinc.BlendFarm.Server
         }
     }
 }
+
+

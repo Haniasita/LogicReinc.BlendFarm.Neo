@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using LogicReinc.BlendFarm.Server;
 using LogicReinc.BlendFarm.Shared;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,9 +44,9 @@ namespace LogicReinc.BlendFarm.Windows
             //Focus();
         }
 
-        public static async Task Show(Window owner)
+        public static new async Task Show(Window owner)
         {
-            CustomBlenderBuildWizard window = new CustomBlenderBuildWizard();
+            CustomBlenderBuildWizard window = new();
 
             window.Position = new PixelPoint((int)(owner.Position.X + ((owner.Width / 2) - window.Width / 2)), (int)(owner.Position.Y + ((owner.Height / 2) - window.Height / 2)));
 
@@ -74,7 +75,7 @@ namespace LogicReinc.BlendFarm.Windows
             else
             {
                 List<BlenderVersion> existing = BlenderVersion.GetBlenderVersions(SystemInfo.RelativeToApplicationDirectory("VersionCache"), SystemInfo.RelativeToApplicationDirectory("VersionCustom"));
-                if (existing.Any(x => x.Name.ToLower() == VersionName.ToLower()))
+                if (existing.Any(x => x.Name.Equals(VersionName, StringComparison.OrdinalIgnoreCase)))
                 {
                     await MessageWindow.Show(this, "Name already exists", "This version name already exists");
                     ShowInterfaceName();
@@ -101,9 +102,9 @@ namespace LogicReinc.BlendFarm.Windows
             }
             else
             {
-                List<string> lines = BlenderVersion.GetCustomBlenderVersions(SystemInfo.RelativeToApplicationDirectory("VersionCustom")).Select(x => x.Name).ToList();
+                List<string> lines = [.. BlenderVersion.GetCustomBlenderVersions(SystemInfo.RelativeToApplicationDirectory("VersionCustom")).Select(x => x.Name)];
                 lines.Add(VersionName);
-                File.WriteAllLines(SystemInfo.RelativeToApplicationDirectory("VersionCustom"), lines.ToArray());
+                File.WriteAllLines(SystemInfo.RelativeToApplicationDirectory("VersionCustom"), [.. lines]);
 
                 _interfaceComplete.IsVisible = true;
             }

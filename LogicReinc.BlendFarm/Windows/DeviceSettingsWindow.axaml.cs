@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using LogicReinc.BlendFarm.Client;
@@ -57,7 +57,7 @@ namespace LogicReinc.BlendFarm.Windows
         public async void Save()
         {
             HistoryClient entry = BlendFarmSettings.Instance.PastClients?.FirstOrDefault(x => x.Key == Node.Name).Value;
-            if(entry == null)
+            if (entry == null)
             {
                 if (!await YesNoWindow.Show(this, "Node not saved yet", "The node was not yet saved, would you like to save it?"))
                     return;

@@ -1,4 +1,4 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
@@ -22,12 +22,12 @@ namespace LogicReinc.BlendFarm
                     if (_noPreviewImage == null)
                     {
                         System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(700, 200);
-                        using(System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
+                        using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp))
                         {
-                            g.DrawString("Could not generate Preview\n(Some Render Formats do not support preview)", 
-                                new System.Drawing.Font("Arial", 16), 
+                            g.DrawString("Could not generate Preview\n(Some Render Formats do not support preview)",
+                                new System.Drawing.Font("Arial", 16),
                                 new System.Drawing.SolidBrush(System.Drawing.Color.Gray),
-                                5,5);
+                                5, 5);
                         }
                         _noPreviewImage = bmp.ToAvaloniaBitmap();
                     }

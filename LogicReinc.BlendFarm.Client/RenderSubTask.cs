@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.Tasks;
+using LogicReinc.BlendFarm.Client.Tasks;
 using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
 using System;

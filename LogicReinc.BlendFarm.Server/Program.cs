@@ -27,7 +27,7 @@ namespace LogicReinc.BlendFarm.Server
 
         public static void StartIntercepting()
         {
-            if(_redirector == null)
+            if (_redirector == null)
             {
                 _redirector = new ConsoleRedirector(Console.Out);
                 _redirector.OnWrite += (output) => OnConsoleOutput?.Invoke(output);
@@ -51,7 +51,7 @@ namespace LogicReinc.BlendFarm.Server
                     Console.WriteLine($"Host Address #{(i + 1)}: {address}");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Failed to obtain host address due to [{ex.GetType().Name}]: {ex.Message}");
             }
@@ -92,7 +92,7 @@ namespace LogicReinc.BlendFarm.Server
 
 
 
-        
+
         private class ConsoleRedirector : TextWriter
         {
             public override Encoding Encoding => Encoding.UTF8;
@@ -131,3 +131,4 @@ namespace LogicReinc.BlendFarm.Server
 
     }
 }
+

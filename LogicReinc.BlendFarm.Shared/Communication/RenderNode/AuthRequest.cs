@@ -16,3 +16,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public bool IsAuthenticated { get; set; }
     }
 }
+
+

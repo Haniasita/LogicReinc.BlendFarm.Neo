@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using LogicReinc.BlendFarm.Client;
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Client.Tasks;
@@ -80,7 +80,7 @@ namespace LogicReinc.BlendFarm.Objects
                     Task = manager.GetImageTask(Project.BlendFile, Settings, (st, bitmap) =>
                     {
                         //Apply image to canvas
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        _ = Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             Project.LastImage = bitmap.ToAvaloniaBitmap();
                             window.RefreshCurrentProject();
@@ -115,7 +115,7 @@ namespace LogicReinc.BlendFarm.Objects
                         final.Save(SaveTo);
 
                     //Apply final to canvas
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    _ = Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         Project.LastImage = final.ToAvaloniaBitmap();
 
@@ -173,8 +173,8 @@ namespace LogicReinc.BlendFarm.Objects
                     RefreshInfo();
 
                     Task.FileID = manager.UpdateFileVersion(Project.BlendFile, Project.UseNetworkedPath);
-                    
-                    if(!Project.UseNetworkedPath)
+
+                    if (!Project.UseNetworkedPath)
                         await manager.Sync(Project.BlendFile, window.UseSyncCompression);
                     else
                         await manager.Sync(Project.BlendFile, Project.NetworkPathWindows, Project.NetworkPathLinux, Project.NetworkPathMacOS);
@@ -204,7 +204,7 @@ namespace LogicReinc.BlendFarm.Objects
 
         public void RefreshInfo()
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Active)));

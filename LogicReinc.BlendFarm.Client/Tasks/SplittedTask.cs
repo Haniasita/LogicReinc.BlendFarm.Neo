@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.Exceptions;
+using LogicReinc.BlendFarm.Client.Exceptions;
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
 using System;
@@ -14,7 +14,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
 {
     public class SplittedTask : RenderTask, IImageTask
     {
-        private bool _isVertical;
+        private readonly bool _isVertical;
 
 
         public Image FinalImage { get; private set; }
@@ -56,12 +56,12 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                             {
                                 taskPart = ExecuteSubTask(node, task);
                             }
-                            catch (TaskCanceledException ex)
+                            catch (TaskCanceledException)
                             {
                                 if (Cancelled)
                                     return;
                             }
-                            catch(RecoverException ex)
+                            catch (RecoverException ex)
                             {
                                 node.UpdateException(ex.Message);
                                 exceptions.Add(ex.Message);
@@ -83,7 +83,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                                 continue;
                             }
 
-                            using (Image img = ImageConverter.Convert(taskPart.Image, task.Parent.Settings.RenderFormat))
+                            using (Image img = ImageTypes.ImageConverter.Convert(taskPart.Image, task.Parent.Settings.RenderFormat))
                                 ProcessTile(task, img, ref g, ref result, ref drawLock);
 
                             ChangeProgress(Progress + task.Value);
@@ -104,8 +104,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
             }
             finally
             {
-                if (g != null)
-                    g.Dispose();
+                g?.Dispose();
             }
             FinalImage = result;
             return true;
@@ -153,3 +152,4 @@ namespace LogicReinc.BlendFarm.Client.Tasks
 
     }
 }
+

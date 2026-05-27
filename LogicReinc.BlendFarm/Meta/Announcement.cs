@@ -1,11 +1,11 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using LogicReinc.BlendFarm.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,6 +14,8 @@ namespace LogicReinc.BlendFarm.Meta
 {
     public class Announcement
     {
+        private static readonly HttpClient _httpClient = new();
+
         public string Name { get; set; }
         public DateTime Date { get; set; }
         public List<StorySegment> Segments { get; set; }
@@ -22,10 +24,8 @@ namespace LogicReinc.BlendFarm.Meta
 
         public static List<Announcement> GetAnnouncements(string url)
         {
-            using (WebClient client = new WebClient())
-            {
-                return JsonSerializer.Deserialize<List<Announcement>>(client.DownloadString(url));
-            }
+            string json = _httpClient.GetStringAsync(url).GetAwaiter().GetResult();
+            return JsonSerializer.Deserialize<List<Announcement>>(json);
         }
 
 
@@ -33,7 +33,8 @@ namespace LogicReinc.BlendFarm.Meta
 
     public class StorySegment : INotifyPropertyChanged
     {
-        private static Dictionary<string, Bitmap> _bitmapCache = new Dictionary<string, Bitmap>();
+        private static readonly Dictionary<string, Bitmap> _bitmapCache = [];
+        private static readonly HttpClient _httpClient = new();
 
 
         public string Type { get; set; }
@@ -48,9 +49,9 @@ namespace LogicReinc.BlendFarm.Meta
         public bool IsButton => Type == "Button";
 
         //Text Property
-        public bool IsPartedText => TextPart2.Contains("|");
-        public string TextPart1 => Text.Contains("|") ? Text.Split('|')[0] : Text;
-        public string TextPart2 => Text.Contains("|") ? Text.Split('|')[1] : Text;
+        public bool IsPartedText => TextPart2.Contains('|');
+        public string TextPart1 => Text.Contains('|') ? Text.Split('|')[0] : Text;
+        public string TextPart2 => Text.Contains('|') ? Text.Split('|')[1] : Text;
 
         public bool IsTextUrl => Text.StartsWith("http://") || Text.StartsWith("https://");
         public bool IsTextPart1Url => TextPart1.StartsWith("http://") || TextPart1.StartsWith("https://");
@@ -62,25 +63,25 @@ namespace LogicReinc.BlendFarm.Meta
             {
                 if (!IsTextPart1Url)
                     return null;
-                if (_bitmapCache.ContainsKey(TextPart1))
-                    return _bitmapCache[TextPart1];
+                if (_bitmapCache.TryGetValue(TextPart1, out Bitmap cachedBitmap))
+                    return cachedBitmap;
 
-                Task.Run(() =>
+                _ = Task.Run(async () =>
                 {
                     try
                     {
-                        using (WebClient client = new WebClient())
-                        using (MemoryStream stream = new MemoryStream(client.DownloadData(TextPart1)))
+                        byte[] imageData = await _httpClient.GetByteArrayAsync(TextPart1);
+                        using (MemoryStream stream = new(imageData))
                         {
-                            Bitmap bitmap = new Bitmap(stream);
+                            Bitmap bitmap = new(stream);
                             _bitmapCache.Add(TextPart1, bitmap);
                         }
                         if (_bitmapCache.ContainsKey(TextPart1))
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BitmapFromText)));
                     }
-                    catch(Exception ex)
+                    catch (Exception)
                     {
-                        if(!_bitmapCache.ContainsKey(TextPart1))
+                        if (!_bitmapCache.ContainsKey(TextPart1))
                             _bitmapCache.Add(TextPart1, null);
                     }
                 });
@@ -97,7 +98,7 @@ namespace LogicReinc.BlendFarm.Meta
 
         public void Execute()
         {
-            if(IsTextPart2Url)
+            if (IsTextPart2Url)
                 Process.Start(new ProcessStartInfo(TextPart2)
                 {
                     UseShellExecute = true

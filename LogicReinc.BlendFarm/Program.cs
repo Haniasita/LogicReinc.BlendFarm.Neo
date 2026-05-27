@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using Avalonia;
@@ -11,7 +11,7 @@ namespace LogicReinc.BlendFarm
     {
         public static Stream GetIconStream()
         {
-            MemoryStream str = new MemoryStream();
+            MemoryStream str = new();
 
             using (Stream res = Assembly.GetExecutingAssembly().GetManifestResourceStream("LogicReinc.BlendFarm.Images.render.ico"))
             {
@@ -27,7 +27,7 @@ namespace LogicReinc.BlendFarm
         // yet and stuff might break.
         public static void Main(string[] args)
         {
-            Console.WriteLine($"LogicReinc.BlendFarm v{typeof(Program).Assembly.GetName().Version.ToString()}");
+            Console.WriteLine($"LogicReinc.BlendFarm v{typeof(Program).Assembly.GetName().Version}");
             Server.Program.CleanupOldSessions();
 
             Console.WriteLine("Saving current setting states");
@@ -54,7 +54,7 @@ namespace LogicReinc.BlendFarm
                 .UsePlatformDetect();
             if (SystemInfo.IsOS(SystemInfo.OS_LINUX64))
                 builder = Avalonia.Dialogs.ManagedFileDialogExtensions.UseManagedSystemDialogs(builder);
-            return builder.LogToDebug();
+            return builder.LogToTrace();
         }
     }
 }

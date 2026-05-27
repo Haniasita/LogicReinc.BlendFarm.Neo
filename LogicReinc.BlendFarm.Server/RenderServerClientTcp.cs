@@ -51,7 +51,7 @@ namespace LogicReinc.BlendFarm.Server
 
         private void HandleConsoleOutput(string text)
         {
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 SendPacket(new ConsoleActivityResponse()
                 {
@@ -189,12 +189,12 @@ namespace LogicReinc.BlendFarm.Server
                         datas.Add(sesData);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     SessionData.CleanUpDelayed(10000, datas.Select(x => x.SessionID).ToArray());
                 }
 
-                foreach(SessionData data in datas)
+                foreach (SessionData data in datas)
                 {
                     if (!sessions.Contains(data.SessionID))
                         sessions.Add(data.SessionID);
@@ -297,7 +297,7 @@ namespace LogicReinc.BlendFarm.Server
                     UploadID = uploadID
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new SyncResponse()
                 {
@@ -346,7 +346,7 @@ namespace LogicReinc.BlendFarm.Server
                     };
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new SyncUploadResponse()
                 {
@@ -535,7 +535,8 @@ namespace LogicReinc.BlendFarm.Server
                             TilesFinished = status.TilesFinish,
                             TilesTotal = status.TilesTotal,
                             Time = status.Time,
-                            TimeRemaining = status.TimeRemaining
+                            TimeRemaining = status.TimeRemaining,
+                            Phase = status.Phase
                         });
                     }
                 };
@@ -564,7 +565,7 @@ namespace LogicReinc.BlendFarm.Server
                         process.OnBlenderCompleteTask += onCompletion;
                         process.OnBlenderException += onException;
                     },
-                    (process)=>
+                    (process) =>
                     {
                         process.OnBlenderStatus -= onStatus;
                         process.OnBlenderCompleteTask -= onCompletion;
@@ -572,7 +573,7 @@ namespace LogicReinc.BlendFarm.Server
                     });
 
                 //Handle Result
-                if (files  == null || files.Count != req.Settings.Count)
+                if (files == null || files.Count != req.Settings.Count)
                 {
                     if (exceptions.Count == 0)
                         return new RenderBatchResponse()
@@ -614,7 +615,8 @@ namespace LogicReinc.BlendFarm.Server
                             SubTaskIDs = req.Settings.Select(X => X.TaskID).ToList()
                         };
                     }
-                };
+                }
+                ;
             }
             catch (Exception ex)
             {
@@ -682,20 +684,21 @@ namespace LogicReinc.BlendFarm.Server
                             TilesFinished = status.TilesFinish,
                             TilesTotal = status.TilesTotal,
                             Time = status.Time,
-                            TimeRemaining = status.TimeRemaining
+                            TimeRemaining = status.TimeRemaining,
+                            Phase = status.Phase
                         });
                     }
                 };
                 Action<string> onException = (excp) => exceptions.Add(excp);
-                string file = _blender.Render(req.Version, filePath, 
-                    BlenderRenderSettings.FromRenderSettings(req.Settings), 
+                string file = _blender.Render(req.Version, filePath,
+                    BlenderRenderSettings.FromRenderSettings(req.Settings),
                     req.FileID,
-                    (process)=>
+                    (process) =>
                     {
                         process.OnBlenderStatus += onStatus;
                         process.OnBlenderException += onException;
                     },
-                    (process)=>
+                    (process) =>
                     {
                         process.OnBlenderStatus -= onStatus;
                         process.OnBlenderException -= onException;
@@ -731,9 +734,10 @@ namespace LogicReinc.BlendFarm.Server
                         TaskID = req.TaskID,
                         Data = data
                     };
-                };
+                }
+                ;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new RenderResponse()
                 {
@@ -762,3 +766,5 @@ namespace LogicReinc.BlendFarm.Server
 
     }
 }
+
+

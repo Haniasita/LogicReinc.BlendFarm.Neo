@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Client.Tasks;
+using LogicReinc.BlendFarm.Client.Tasks;
 using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
 using System;
@@ -153,7 +153,7 @@ namespace LogicReinc.BlendFarm.Client
 
         public void Cleanup()
         {
-            foreach(BlendFarmFileSession session in _sessions.Values)
+            foreach (BlendFarmFileSession session in _sessions.Values)
             {
                 if (session.Networked)
                 {
@@ -232,7 +232,7 @@ namespace LogicReinc.BlendFarm.Client
         public void RemoveNode(string name)
         {
             RenderNode node = GetNodeByName(name);
-            if(node != null)
+            if (node != null)
             {
                 Nodes.Remove(node);
                 node.Disconnect();
@@ -273,7 +273,7 @@ namespace LogicReinc.BlendFarm.Client
                                 }
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Console.WriteLine($"File Watch exception: [{ex.GetType().Name}] {ex.Message}");
                         }
@@ -396,7 +396,7 @@ namespace LogicReinc.BlendFarm.Client
                 {
                     resp = await node.PrepareVersion(version);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     node.LastStatus = $"Version Failed: {ex.Message}";
                     node.UpdateException("Version Failure");
@@ -464,7 +464,7 @@ namespace LogicReinc.BlendFarm.Client
 
                 string toSend = file;
 
-                if(compress)
+                if (compress)
                     using (FileStream mem = new FileStream("compressed.zip", FileMode.Create))
                     {
                         byte[] buffer = new byte[4096];
@@ -490,7 +490,7 @@ namespace LogicReinc.BlendFarm.Client
                     SyncResponse resp = null;
                     try
                     {
-                        using(FileStream str = new FileStream(toSend, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (FileStream str = new FileStream(toSend, FileMode.Open, FileAccess.Read, FileShare.Read))
                             resp = await node.SyncFile(session.SessionID, id, str, (compress) ? Compression.GZip : Compression.Raw);
                     }
                     catch (Exception ex)
@@ -526,7 +526,7 @@ namespace LogicReinc.BlendFarm.Client
             return CurrentTask;
         }
 
-        public RenderTask GetAnimationTask(string file, int start, int end,RenderManagerSettings settings = null, Action<RenderSubTask, SubTaskResult> onResult = null)
+        public RenderTask GetAnimationTask(string file, int start, int end, RenderManagerSettings settings = null, Action<RenderSubTask, SubTaskResult> onResult = null)
         {
             BlendFarmFileSession session = GetOrCreateSession(file);
             CurrentTask = new AnimationTask(Nodes.ToList(), session.SessionID, Version, session.FileID, start, end, settings);

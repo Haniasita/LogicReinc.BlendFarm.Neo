@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Server;
+using LogicReinc.BlendFarm.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

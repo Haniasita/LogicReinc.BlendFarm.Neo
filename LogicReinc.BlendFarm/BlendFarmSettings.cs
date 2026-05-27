@@ -1,4 +1,4 @@
-﻿using LogicReinc.BlendFarm.Objects;
+using LogicReinc.BlendFarm.Objects;
 using LogicReinc.BlendFarm.Server;
 using LogicReinc.BlendFarm.Shared;
 using System;

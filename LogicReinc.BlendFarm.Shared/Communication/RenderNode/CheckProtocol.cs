@@ -23,3 +23,5 @@ namespace LogicReinc.BlendFarm.Shared.Communication.RenderNode
         public bool RequireAuth { get; set; } = false;
     }
 }
+
+

@@ -101,7 +101,7 @@ namespace LogicReinc.BlendFarm.Shared.Communication
         public void FinalWrite(Stream stream)
         {
             _stream.Seek(0, SeekOrigin.Begin);
-            using(GZipStream str = new GZipStream(_stream, CompressionMode.Decompress))
+            using (GZipStream str = new GZipStream(_stream, CompressionMode.Decompress))
             {
                 while ((_read = str.Read(_buffer, 0, _buffer.Length)) > 0)
                     stream.Write(_buffer, 0, _read);
@@ -109,3 +109,4 @@ namespace LogicReinc.BlendFarm.Shared.Communication
         }
     }
 }
+
