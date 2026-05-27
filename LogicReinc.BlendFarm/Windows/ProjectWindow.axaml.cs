@@ -337,7 +337,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 _manager.AddNode(BlendFarmManager.LocalNodeName, $"localhost:{LocalServer.ServerPort}", RenderType.CPU, ServerSettings.Instance.BasicSecurityPassword);
 
             foreach (var pair in BlendFarmSettings.Instance.PastClients.ToList())
-                _manager.AddNode(pair.Key, pair.Value.Address, pair.Value.RenderType, pair.Value.Pass);
+                _manager.AddNode(pair.Key, pair.Value.Address, pair.Value.RenderType, pair.Value.Pass, pair.Value.MAC);
 
             if (useAssetSync.IsChecked.Value)
             {

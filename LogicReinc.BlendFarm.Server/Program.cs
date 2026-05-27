@@ -25,6 +25,13 @@ namespace LogicReinc.BlendFarm.Server
 
         private static ConsoleRedirector _redirector = null;
 
+        private static int timeBeforeSleep = 50;
+        private static int sleepTimer = timeBeforeSleep;
+
+        [DllImport("PowrProf.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
+
         public static void StartIntercepting()
         {
             if (_redirector == null)
@@ -70,8 +77,20 @@ namespace LogicReinc.BlendFarm.Server
 
 
             //ReadLines in main loop removed for deployment as this can freeze background threads under specific conditions
-            while (true)
+            while (true) {
+                if (Server.Clients.Count == 0)
+                {
+                    sleepTimer--;
+                    if (sleepTimer == 0) 
+                    {
+                        sleepTimer = timeBeforeSleep;
+                        SetSuspendState(true, true, true); 
+                    }
+                }
+                else sleepTimer = timeBeforeSleep;
+
                 Thread.Sleep(500);
+            }
 
             Server.Stop();
         }

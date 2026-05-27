@@ -71,6 +71,7 @@ namespace LogicReinc.BlendFarm.Client
         /// Auto-balanced Performance score
         /// </summary>
         public decimal PerformanceScorePP { get; set; } = 0;
+        public string MAC { get; set; }
 
         /// <summary>
         /// Render type this node will use
@@ -216,6 +217,7 @@ namespace LogicReinc.BlendFarm.Client
             if (!Connected)
             {
                 UpdateActivity("Connecting");
+                if (MAC != null) MagicPacket.Send(MAC);
 
                 try
                 {

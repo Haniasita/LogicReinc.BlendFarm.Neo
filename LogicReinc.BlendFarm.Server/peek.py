@@ -12,6 +12,8 @@ scn = bpy.context.scene
 
 try:
     peekObj = dict(
+        Engine = bpy.context.engine,
+        OutputPath = scn.render.filepath,
         RenderWidth = scn.render.resolution_x,
         RenderHeight = scn.render.resolution_y,
         FrameStart = scn.frame_start,

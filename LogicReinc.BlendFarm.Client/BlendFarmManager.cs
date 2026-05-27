@@ -194,7 +194,7 @@ namespace LogicReinc.BlendFarm.Client
             return Nodes.FirstOrDefault(x => x.Address == address);
         }
 
-        public RenderNode AddNode(string name, string address, RenderType type = RenderType.CPU, string pass = null) => AddNode(new RenderNode() { Name = name, Address = address, RenderType = type, Pass = pass });
+        public RenderNode AddNode(string name, string address, RenderType type = RenderType.CPU, string pass = null, string mac = "") => AddNode(new RenderNode() { Name = name, Address = address, RenderType = type, Pass = pass, MAC = mac });
         public RenderNode AddNode(RenderNode node)
         {
             RenderNode existing = GetNodeByName(node.Name);
