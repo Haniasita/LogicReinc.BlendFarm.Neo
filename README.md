@@ -14,14 +14,13 @@ Special thanks to :
 
 - ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
 - ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled, cross-platform compatibility added ✓
+- ~~Validate Apple Silicon compatibility~~ macos-arm added as build target, needs testing !
 - Implement network benchmarking runs to get accurate tile splits on first render
-
 - Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
 - General UI redesign
 - Improve unit tests
 - Batch Animation Frames (Reduce "Render Loading.. between frames)
 - Settings Interface
-- Validate Apple Silicon compatibility
 - TCP protocol (and other places) may benefit from minor memory improvements
 - Auto-merge animations into video/gifs
 - Render Focus (target a specific area to render first)
