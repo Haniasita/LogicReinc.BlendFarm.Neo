@@ -19,6 +19,10 @@
 				"Type": "Button",
 				"Text": "View on GitHub|https://github.com/Haniasita/LogicReinc.BlendFarm.Neo"
 			}
+			{
+				"Type": "Button",
+				"Text": "View original GitHub|https://github.com/LogicReinc/LogicReinc.BlendFarm"
+			}
 		]
 	},
 
