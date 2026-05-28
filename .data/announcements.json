@@ -1,5 +1,27 @@
 [
-	
+	{
+		"Date": "2026-05-28",
+		"Name": "The unofficial 1.1.7 is out : BlendFarm development continues as BlendFarm Neo!",
+		"Segments": [
+			{
+				"Type": "Text",
+				"Text": "BlendFarm Neo is here! This is an unofficial continuation of BlendFarm, rebuilt using modern technologies with added improvements by the community. Stay tuned for more updates and features!"
+			},
+			{
+				"Type": "Text",
+				"Text": "Key improvements in BlendFarm Neo 1.1.7 include .NET 8 runtime, improved Blender state reporting (OptiX had issues), Wake on LAN support, updated dependencies, code cleanup and optimizations. Refer to the GitHub repository for the full changelog and roadmap."
+			},
+			{
+				"Type": "Image",
+				"Text": "https://raw.githubusercontent.com/Haniasita/LogicReinc.BlendFarm.Neo/neo-main/.data/blender4.0-art.png"
+			},
+			{
+				"Type": "Button",
+				"Text": "View on GitHub|https://github.com/Haniasita/LogicReinc.BlendFarm.Neo"
+			}
+		]
+	},
+
 	{
 		"Date": "2024-02-04",
 		"Name": "Version 1.1.6 is out! Blender 4.0 fix",

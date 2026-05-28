@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="625"
         x:Class="LogicReinc.BlendFarm.Windows.ProjectWindow"
-        Title="BlendFarm by LogicReinc" Background="#222222">
+        Title="BlendFarm Neo" Background="#222222">
   <Window.Styles>
     <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
   </Window.Styles>
