@@ -22,6 +22,10 @@
 			{
 				"Type": "Button",
 				"Text": "View original GitHub|https://github.com/LogicReinc/LogicReinc.BlendFarm"
+			},
+			{
+				"Type": "Empty",
+				"Text": ""
 			}
 		]
 	},
