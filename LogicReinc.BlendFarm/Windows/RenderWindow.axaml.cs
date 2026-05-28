@@ -249,7 +249,17 @@ namespace LogicReinc.BlendFarm.Windows
                                 }
                             });
                     };
-                    localNode.ConnectAndPrepare(Version.Name);
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await localNode.ConnectAndPrepare(Version.Name);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[ERROR] Failed to connect and prepare local node: {ex.Message}");
+                        }
+                    });
                 }
             }
 

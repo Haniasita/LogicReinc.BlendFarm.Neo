@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using LogicReinc.BlendFarm.Server;
@@ -27,34 +28,50 @@ namespace LogicReinc.BlendFarm
         // yet and stuff might break.
         public static void Main(string[] args)
         {
-            Console.WriteLine($"LogicReinc.BlendFarm v{typeof(Program).Assembly.GetName().Version}");
-            Server.Program.CleanupOldSessions();
+            ExceptionLogger.Configure();
 
-            Console.WriteLine("Saving current setting states");
-            BlendFarmSettings.Instance.Save();
-            ServerSettings.Instance.Save();
-
-            string localPath = SystemInfo.RelativeToApplicationDirectory(BlendFarmSettings.Instance.LocalBlendFiles);
             try
             {
-                if (Directory.Exists(localPath))
-                    Directory.Delete(localPath, true);
-            }
-            catch { }
-            Directory.CreateDirectory(localPath);
+                Console.WriteLine($"LogicReinc.BlendFarm v{typeof(Program).Assembly.GetName().Version}");
+                Server.Program.CleanupOldSessions();
 
-            BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+                Console.WriteLine("Saving current setting states");
+                BlendFarmSettings.Instance.Save();
+                ServerSettings.Instance.Save();
+
+                string localPath = SystemInfo.RelativeToApplicationDirectory(BlendFarmSettings.Instance.LocalBlendFiles);
+                try
+                {
+                    if (Directory.Exists(localPath))
+                        Directory.Delete(localPath, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Failed to clean local blend files: {ex.Message}");
+                }
+                Directory.CreateDirectory(localPath);
+
+                BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogger.LogException("FATAL ERROR", ex);
+                Environment.Exit(1);
+            }
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
             AppBuilder builder = AppBuilder.Configure<App>()
-                .UsePlatformDetect();
+                .UsePlatformDetect()
+                .LogToTrace();
+
             if (SystemInfo.IsOS(SystemInfo.OS_LINUX64))
                 builder = Avalonia.Dialogs.ManagedFileDialogExtensions.UseManagedSystemDialogs(builder);
-            return builder.LogToTrace();
+
+            return builder;
         }
     }
 }

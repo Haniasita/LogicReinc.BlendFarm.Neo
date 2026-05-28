@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -9,17 +10,33 @@ namespace LogicReinc.BlendFarm
     {
         public override void Initialize()
         {
-            AvaloniaXamlLoader.Load(this);
+            try
+            {
+                AvaloniaXamlLoader.Load(this);
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogger.LogException("XAML LOADING ERROR", ex);
+                throw;
+            }
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            try
             {
-                desktop.MainWindow = new ProjectWindow();
-            }
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    desktop.MainWindow = new ProjectWindow();
+                }
 
-            base.OnFrameworkInitializationCompleted();
+                base.OnFrameworkInitializationCompleted();
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogger.LogException("FRAMEWORK INITIALIZATION ERROR", ex);
+                throw;
+            }
         }
     }
 }

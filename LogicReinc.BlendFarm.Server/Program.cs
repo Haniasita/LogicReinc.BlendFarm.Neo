@@ -60,7 +60,7 @@ namespace LogicReinc.BlendFarm.Server
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to obtain host address due to [{ex.GetType().Name}]: {ex.Message}");
+                Console.WriteLine($"[WARNING] Failed to obtain host address due to [{ex.GetType().Name}]: {ex.Message}");
             }
             //List host port
             Console.WriteLine($"Port: {ServerSettings.Instance.Port}");
@@ -106,7 +106,10 @@ namespace LogicReinc.BlendFarm.Server
                 if (Directory.Exists(path))
                     Directory.Delete(path, true);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARNING] Failed to cleanup old sessions: {ex.Message}");
+            }
         }
 
 
