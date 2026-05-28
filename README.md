@@ -11,6 +11,7 @@ Special thanks to :
 - Ludrietz for their own improvements fork : https://github.com/Ludrietz/LogicReinc.BlendFarm
 
 ### Planned improvements :
+
 - ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
 - ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled, cross-platform compatibility added ✓
 - Implement network benchmarking runs to get accurate tile splits on first render
@@ -26,6 +27,20 @@ Special thanks to :
 - Render Focus (target a specific area to render first)
 - Render Rectangle (just render a specific area)
 - Docker Image
+
+## Building
+
+**Linux/macOS:**
+```bash
+./build.sh [--platform <windows|linux|osx|osx-arm|all>] [--targets <client|server|all>]
+```
+
+**Windows:**
+```powershell
+.\build.ps1 [-Platform <windows|linux|osx|osx-arm|all>] [-Targets <client|server|all>]
+```
+
+Omit flags for interactive prompts. Outputs to `Releases/`.
 
 # Original readme : 
 When I was trying to build a render server I was suprised most network renderers out there for Blender are either outdated, obsolete or require very specific environments to work properly. Thus, I spend the last months writing and testing a stand-alone network renderer that requires barely any setup and should work with most if not all recent versions of Blender. And should even work with future releases. 

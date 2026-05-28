@@ -17,7 +17,3 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("9b9eb5e0-e407-46f6-b770-bfbbfb09c591")]
 
-[assembly: AssemblyVersion("1.1.7.0")]
-[assembly: AssemblyFileVersion("1.1.7.0")]
-[assembly: AssemblyInformationalVersion("1.1.7-unofficial-patch")]
-[assembly: AssemblyMetadata("PatchNotes", "Security updates: upgraded to .NET 8, fixed vulnerable packages, modernized APIs")]

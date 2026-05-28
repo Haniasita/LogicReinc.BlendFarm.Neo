@@ -6,7 +6,7 @@
 	<RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <PackageIcon>icon.png</PackageIcon>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
