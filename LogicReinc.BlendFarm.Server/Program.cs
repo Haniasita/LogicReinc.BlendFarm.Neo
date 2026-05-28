@@ -72,7 +72,8 @@ namespace LogicReinc.BlendFarm.Server
 
 
             //ReadLines in main loop removed for deployment as this can freeze background threads under specific conditions
-            while (true) {
+            while (true)
+            {
                 if (Server.Clients.Count == 0)
                 {
                     sleepTimer--;
@@ -86,8 +87,6 @@ namespace LogicReinc.BlendFarm.Server
 
                 Thread.Sleep(500);
             }
-
-            Server.Stop();
         }
 
         /// <summary>

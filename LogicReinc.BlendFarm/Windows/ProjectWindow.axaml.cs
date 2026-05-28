@@ -74,19 +74,19 @@ namespace LogicReinc.BlendFarm.Windows
             {
                 LocalServer.OnServerException += (a, b) =>
                 {
-                    _ = Dispatcher.UIThread.InvokeAsync(() =>
+                    _ = Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        MessageWindow.Show(this, "Local Server Failure",
-                            $@"Local server failed to start, if you're already using a port, change it in settings. 
-Or if you're running this program twice, ignore I guess. 
+                        await MessageWindow.Show(this, "Local Server Failure",
+                            $@"Local server failed to start, if you're already using a port, change it in settings.
+Or if you're running this program twice, ignore I guess.
 (TCP: {ServerSettings.Instance.Port}, UDP: {ServerSettings.Instance.BroadcastPort})");
                     });
                 };
                 LocalServer.OnBroadcastException += (a, b) =>
                 {
-                    _ = Dispatcher.UIThread.InvokeAsync(() =>
+                    _ = Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        MessageWindow.Show(this, "Local Broadcast Failure",
+                        await MessageWindow.Show(this, "Local Broadcast Failure",
                             $@"Local Server failed to broadcast or receive broadcasts for auto-discovery.  It can be changed in settings.
 This may have to do with the port being in use. Note that to discover other pcs their broadcast port needs to be the same..
 (TCP: {ServerSettings.Instance.Port}, UDP: {ServerSettings.Instance.BroadcastPort})");
@@ -193,7 +193,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
             };
 
             if (_noServer)
-                MessageWindow.Show(this, "OSX Rendering", "Rendering using Blender is disabled for OSX due to it not being implemented fully yet. You can however render using other machines in your network. (Local render node will not be available)");
+                _ = MessageWindow.Show(this, "OSX Rendering", "Rendering using Blender is disabled for OSX due to it not being implemented fully yet. You can however render using other machines in your network. (Local render node will not be available)");
         }
 
         public void ReloadVersions()
@@ -216,7 +216,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
             }
             catch (Exception ex)
             {
-                MessageWindow.Show(this, "Exception retrieving versions",
+                _ = MessageWindow.Show(this, "Exception retrieving versions",
                     $"Failed to retrieve versions due to {ex.Message}, this may be due to no internet connection.An internet connection is required to retrieve version info and download Blender installations. Restart application with internet connection for Blender versions..",
                     600, 250);
             }
@@ -303,7 +303,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
 
             if (!File.Exists(file))
             {
-                MessageWindow.Show(this, "File not found", $"{file} does not exist");
+                _ = MessageWindow.Show(this, "File not found", $"{file} does not exist");
                 ShowLoadProjectUI(true);
                 return;
             }
@@ -353,9 +353,9 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 {
                     if (!LocalServer.Manager.TryPrepare(version.Name))
                     {
-                        _ = Dispatcher.UIThread.InvokeAsync(() =>
+                        _ = Dispatcher.UIThread.InvokeAsync(async () =>
                         {
-                            MessageWindow.Show(this, "Failed to prepare Blender version", "Asset sync requires local Blender, but failed to download it");
+                            await MessageWindow.Show(this, "Failed to prepare Blender version", "Asset sync requires local Blender, but failed to download it");
                             ShowLoadProjectUI(true);
                         });
                     }

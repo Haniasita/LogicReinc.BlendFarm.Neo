@@ -203,11 +203,11 @@ namespace LogicReinc.BlendFarm.Windows
             {
                 foreach (RenderNode node in Manager.Nodes.ToList())
                     Nodes.Add(node);
-                Manager.OnNodeAdded += (manager, node) => Dispatcher.UIThread.InvokeAsync(() =>
+                Manager.OnNodeAdded += (manager, node) => _ = Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     Nodes.Add(node);
                 });
-                Manager.OnNodeRemoved += (manager, node) => Dispatcher.UIThread.InvokeAsync(() =>
+                Manager.OnNodeRemoved += (manager, node) => _ = Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     Nodes.Remove(node);
                 });
@@ -228,7 +228,7 @@ namespace LogicReinc.BlendFarm.Windows
             if (Options.ConnectLocal)
             {
                 if (localNode == null)
-                    MessageWindow.Show(this, "No Local Node", "No local server is available..");
+                    _ = MessageWindow.Show(this, "No Local Node", "No local server is available..");
                 else
                 {
                     bool didConnect = false;
@@ -379,7 +379,7 @@ namespace LogicReinc.BlendFarm.Windows
             };
             Projects.Add(proj);
 
-            SwitchProject(proj);
+            _ = SwitchProject(proj);
 
             return proj;
         }
@@ -425,12 +425,12 @@ namespace LogicReinc.BlendFarm.Windows
             {
                 if (BlendFarmSettings.Instance.PastClients.Any(x => x.Key == InputClientName || x.Value.Address == InputClientAddress))
                 {
-                    MessageWindow.Show(this, "Node already exists", "Node already exists, use a different name and address");
+                    _ = MessageWindow.Show(this, "Node already exists", "Node already exists, use a different name and address");
                     return;
                 }
                 if (!Regex.IsMatch(InputClientAddress, "^([a-zA-Z0-9\\.]*?):[0-9][0-9]?[0-9]?[0-9]?[0-9]?$"))
                 {
-                    MessageWindow.Show(this, "Invalid Address", "The address provided seems to be invalid, expected format is {hostname}:{port} or {ip}{port}, eg. 192.168.1.123:15000");
+                    _ = MessageWindow.Show(this, "Invalid Address", "The address provided seems to be invalid, expected format is {hostname}:{port} or {ip}{port}, eg. 192.168.1.123:15000");
                     return;
                 }
 
@@ -445,7 +445,7 @@ namespace LogicReinc.BlendFarm.Windows
                 BlendFarmSettings.Instance.Save();
             }
             else
-                MessageWindow.Show(this, "No name or address", "A node requires both a name and an address");
+                _ = MessageWindow.Show(this, "No name or address", "A node requires both a name and an address");
         }
 
         public void DeleteNode(RenderNode node)
@@ -466,7 +466,7 @@ namespace LogicReinc.BlendFarm.Windows
         }
         public async void ConfigureNode(RenderNode node)
         {
-            DeviceSettingsWindow.Show(this, node);
+            _ = DeviceSettingsWindow.Show(this, node);
         }
 
         public void StartingRender(RenderTask task)
@@ -490,7 +490,7 @@ namespace LogicReinc.BlendFarm.Windows
             {
                 if (!Manager.Nodes.Any(x => x.Connected))
                 {
-                    MessageWindow.Show(this, "No Nodes", "Need at least one connected node to import");
+                    _ = MessageWindow.Show(this, "No Nodes", "Need at least one connected node to import");
                     return null;
                 }
 
@@ -521,7 +521,7 @@ namespace LogicReinc.BlendFarm.Windows
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        MessageWindow.Show(this, "Failed Peek", "Failed peek due to:" + ex.Message);
+                        await MessageWindow.Show(this, "Failed Peek", "Failed peek due to:" + ex.Message);
                     });
                     return null;
                 }
@@ -606,7 +606,7 @@ namespace LogicReinc.BlendFarm.Windows
             }
             catch (Exception ex)
             {
-                MessageWindow.Show(this, "Test failed", ex.Message);
+                _ = MessageWindow.Show(this, "Test failed", ex.Message);
             }
         }
 
@@ -706,7 +706,7 @@ namespace LogicReinc.BlendFarm.Windows
                     if (!noExcep)
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
-                            MessageWindow.Show(this, "Failed Render", "Failed render due to:" + ex.Message);
+                            await MessageWindow.Show(this, "Failed Render", "Failed render due to:" + ex.Message);
                         });
                 }
                 finally
@@ -795,9 +795,9 @@ namespace LogicReinc.BlendFarm.Windows
                                 if (currentProject == CurrentProject)
                                     RaisePropertyChanged(CurrentProjectProperty, null, CurrentProject);
                             }
-                            catch (Exception ex)
+                            catch
                             {
-                                MessageWindow.Show(this, "GUI Exception", "An error occured trying to load animation Bitmap in GUI.\n(Animation frame should still be saved)");
+                                _ = MessageWindow.Show(this, "GUI Exception", "An error occured trying to load animation Bitmap in GUI.\n(Animation frame should still be saved)");
                             }
                             _lastRenderTime.Text = watch.Elapsed.ToString();
                         });
@@ -964,7 +964,7 @@ namespace LogicReinc.BlendFarm.Windows
             lock (Queue)
                 Queue.Remove(item);
             if (item.Task != null && !item.Completed && item.Active)
-                item.CancelQueueItem();
+                _ = item.CancelQueueItem();
         }
 
 
@@ -1118,7 +1118,7 @@ namespace LogicReinc.BlendFarm.Windows
             RaisePropertyChanged(CanTabScrollRightProperty, !CanTabScrollLeft, CanTabScrollRight);
 
             if (TabScrollIndex < Projects.Count && TabScrollIndex >= 0)
-                SwitchProject(Projects[TabScrollIndex]);
+                _ = SwitchProject(Projects[TabScrollIndex]);
         }
         public void ScrollLeft()
         {
@@ -1128,7 +1128,7 @@ namespace LogicReinc.BlendFarm.Windows
             RaisePropertyChanged(CanTabScrollRightProperty, !CanTabScrollLeft, CanTabScrollRight);
 
             if (TabScrollIndex < Projects.Count && TabScrollIndex >= 0)
-                SwitchProject(Projects[TabScrollIndex]);
+                _ = SwitchProject(Projects[TabScrollIndex]);
         }
 
         //UI Properties
@@ -1223,7 +1223,7 @@ namespace LogicReinc.BlendFarm.Windows
         {
             if (args.AddedItems.Count == 1 && Projects.Contains(args.AddedItems[0]))
             {
-                SwitchProject(args.AddedItems[0] as OpenBlenderProject);
+                _ = SwitchProject(args.AddedItems[0] as OpenBlenderProject);
             }
         }
 

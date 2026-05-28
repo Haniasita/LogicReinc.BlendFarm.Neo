@@ -189,9 +189,9 @@ namespace LogicReinc.BlendFarm.Server
                         datas.Add(sesData);
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    SessionData.CleanUpDelayed(10000, datas.Select(x => x.SessionID).ToArray());
+                    _ = SessionData.CleanUpDelayed(10000, datas.Select(x => x.SessionID).ToArray());
                 }
 
                 foreach (SessionData data in datas)

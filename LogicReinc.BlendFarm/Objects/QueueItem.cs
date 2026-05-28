@@ -142,7 +142,7 @@ namespace LogicReinc.BlendFarm.Objects
                         }
                         catch (Exception ex)
                         {
-                            MessageWindow.Show(_owner, "Frame Save Error", $"Animation frame {task.Frame} failed to save due to:" + ex.Message);
+                            _ = MessageWindow.Show(_owner, "Frame Save Error", $"Animation frame {task.Frame} failed to save due to:" + ex.Message);
                             return;
                         }
 
@@ -193,7 +193,7 @@ namespace LogicReinc.BlendFarm.Objects
             catch (Exception ex)
             {
                 if (!Task.Consumed)
-                    Task.Cancel();
+                    _ = Task.Cancel();
                 Exception = ex.Message;
                 Cancelled = true;
                 Project.SetRenderTask(null);
@@ -234,9 +234,9 @@ namespace LogicReinc.BlendFarm.Objects
                 if (Completed)
                 {
                     if (!string.IsNullOrEmpty(SaveTo))
-                        BitmapViewer.Show(_owner, Project.BlendFile, LastImage.ToAvaloniaBitmap());
+                        _ = BitmapViewer.Show(_owner, Project.BlendFile, LastImage.ToAvaloniaBitmap());
                     else
-                        BitmapViewer.Show(_owner, Project.BlendFile, LastImage.ToAvaloniaBitmap());
+                        _ = BitmapViewer.Show(_owner, Project.BlendFile, LastImage.ToAvaloniaBitmap());
                 }
             }
             catch (Exception ex)

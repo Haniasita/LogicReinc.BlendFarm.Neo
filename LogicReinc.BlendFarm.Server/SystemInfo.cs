@@ -72,7 +72,7 @@ namespace LogicReinc.BlendFarm.Server
             {
                 name = GetOSName();
             }
-            catch (NotImplementedException ex) { }
+            catch (NotImplementedException) { }
             return name == osName;
         }
     }
