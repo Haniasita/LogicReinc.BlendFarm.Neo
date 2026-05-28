@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,10 +26,6 @@ namespace LogicReinc.BlendFarm.Server
 
         private static int timeBeforeSleep = 50;
         private static int sleepTimer = timeBeforeSleep;
-
-        [DllImport("PowrProf.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
 
         public static void StartIntercepting()
         {
@@ -81,10 +76,10 @@ namespace LogicReinc.BlendFarm.Server
                 if (Server.Clients.Count == 0)
                 {
                     sleepTimer--;
-                    if (sleepTimer == 0) 
+                    if (sleepTimer == 0)
                     {
                         sleepTimer = timeBeforeSleep;
-                        SetSuspendState(true, true, true); 
+                        SystemSleep.Suspend();
                     }
                 }
                 else sleepTimer = timeBeforeSleep;
