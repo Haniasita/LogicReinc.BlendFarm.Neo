@@ -14,7 +14,7 @@ namespace LogicReinc.BlendFarm.Windows
         Always,
         Never
     }
-    public class YesNoNeverWindow : Window
+    public partial class YesNoNeverWindow : Window
     {
         private static Dictionary<string, bool> neverResponses = new Dictionary<string, bool>();
 

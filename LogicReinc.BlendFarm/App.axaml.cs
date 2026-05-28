@@ -6,7 +6,7 @@ using LogicReinc.BlendFarm.Windows;
 
 namespace LogicReinc.BlendFarm
 {
-    public class App : Application
+    public partial class App : Application
     {
         public override void Initialize()
         {

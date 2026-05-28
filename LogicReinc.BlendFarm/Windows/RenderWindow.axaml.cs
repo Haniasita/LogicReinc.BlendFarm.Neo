@@ -32,7 +32,7 @@ using Image = Avalonia.Controls.Image;
 
 namespace LogicReinc.BlendFarm.Windows
 {
-    public class RenderWindow : Window
+    public partial class RenderWindow : Window
     {
         private static DirectProperty<RenderWindow, bool> IsRenderingProperty =
             AvaloniaProperty.RegisterDirect<RenderWindow, bool>(nameof(IsRendering), (x) => x.IsRendering);
@@ -292,9 +292,9 @@ namespace LogicReinc.BlendFarm.Windows
             _camerasAvailableBox = this.Find<ComboBox>("availableCamerasBox");
             _camerasBox = this.Find<AutoCompleteBox>("cameraBox");
 
-            _selectStrategy.Items = Enum.GetValues(typeof(RenderStrategy));
+            _selectStrategy.ItemsSource = Enum.GetValues(typeof(RenderStrategy));
             _selectStrategy.SelectedIndex = 0;
-            _selectOrder.Items = Enum.GetValues(typeof(TaskOrder));
+            _selectOrder.ItemsSource = Enum.GetValues(typeof(TaskOrder));
             _selectOrder.SelectedIndex = 0;
 
             _image.KeyDown += async (a, b) =>
@@ -399,7 +399,7 @@ namespace LogicReinc.BlendFarm.Windows
                 RaisePropertyChanged(CanTabScrollRightProperty, !CanTabScrollRight, CanTabScrollRight);
 
                 _image.Source = proj.LastImage;
-                _scenesAvailableBox.Items = CurrentProject.ScenesAvailable;
+                _scenesAvailableBox.ItemsSource = CurrentProject.ScenesAvailable;
             });
         }
 
@@ -476,7 +476,7 @@ namespace LogicReinc.BlendFarm.Windows
             if (!CurrentProject.ScenesAvailable.Contains(scene))
             {
                 CurrentProject.ScenesAvailable.Add(scene);
-                _scenesAvailableBox.Items = CurrentProject.ScenesAvailable;
+                _scenesAvailableBox.ItemsSource = CurrentProject.ScenesAvailable;
             }
 
             BlendFarmSettings.Instance.ApplyProjectSettings(CurrentProject.BlendFile, CurrentProject.GetProjectSettings());
@@ -579,13 +579,13 @@ namespace LogicReinc.BlendFarm.Windows
             project.Scene = peekInfo.SelectedScene;
             if (project.ScenesAvailable.Count > 0)
             {
-                _scenesAvailableBox.Items = project.ScenesAvailable;
+                _scenesAvailableBox.ItemsSource = project.ScenesAvailable;
                 _scenesBox.IsVisible = false;
                 _scenesAvailableBox.IsVisible = true;
             }
             if (project.CamerasAvailable.Count > 0)
             {
-                _camerasAvailableBox.Items = project.CamerasAvailable;
+                _camerasAvailableBox.ItemsSource = project.CamerasAvailable;
                 _camerasBox.IsVisible = false;
                 _camerasAvailableBox.IsVisible = true;
             }

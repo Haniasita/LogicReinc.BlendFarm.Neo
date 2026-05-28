@@ -22,19 +22,9 @@ namespace LogicReinc.BlendFarm.Windows
     /// <summary>
     /// Assumes only one on startup
     /// </summary>
-    public class ProjectWindow : Window, INotifyPropertyChanged
+    public partial class ProjectWindow : Window, INotifyPropertyChanged
     {
         static List<BlenderVersion> versions = [];
-
-        private TextBox fileSelection = null;
-        private ComboBox comboVersions = null;
-        private ListBox history = null;
-        private StackPanel loadingUI = null;
-        private TextBlock loadingText = null;
-        private StackPanel loadProjectUI = null;
-        private CheckBox useAssetSync = null;
-        private CheckBox connectLocal = null;
-        private CheckBox importSettings = null;
 
         private bool _startedNew = false;
 
@@ -105,6 +95,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
             }
 
             this.InitializeComponent();
+            SetupUI();
 
             new Thread(() =>
             {
@@ -137,9 +128,8 @@ This may have to do with the port being in use. Note that to discover other pcs 
             }).Start();
         }
 
-        private void InitializeComponent()
+        private void SetupUI()
         {
-            AvaloniaXamlLoader.Load(this);
             Width = 600;
             Height = 700;
             MinHeight = 700;
@@ -147,39 +137,42 @@ This may have to do with the port being in use. Note that to discover other pcs 
             MaxHeight = 700;
             MaxWidth = 600;
 
-            fileSelection = this.FindControl<TextBox>("fileSelect");
-
-            loadingUI = this.FindControl<StackPanel>("loadingUI");
-            loadingText = this.FindControl<TextBlock>("loadingText");
-            loadProjectUI = this.FindControl<StackPanel>("loadProjectUI");
-            useAssetSync = this.FindControl<CheckBox>("useAssetSync");
-            connectLocal = this.FindControl<CheckBox>("connectLocal");
-            importSettings = this.FindControl<CheckBox>("importSettings");
-
-            useAssetSync.IsEnabled = false;
-            useAssetSync.IsChecked = BlendFarmSettings.Instance.Option_UseAssetsSync;
-            connectLocal.IsChecked = BlendFarmSettings.Instance.Option_ConnectLocal;
-            importSettings.IsChecked = BlendFarmSettings.Instance.Option_ImportSettings;
-            if (_noServer)
+            if (useAssetSync != null)
             {
-                connectLocal.IsChecked = false;
-                connectLocal.IsEnabled = false;
+                useAssetSync.IsEnabled = false;
+                useAssetSync.IsChecked = BlendFarmSettings.Instance.Option_UseAssetsSync;
             }
-            if (!(connectLocal.IsChecked ?? false))
-                importSettings.IsEnabled = false;
-
-            connectLocal.Unchecked += (a, b) =>
+            if (connectLocal != null)
             {
-                importSettings.IsChecked = false;
-                importSettings.IsEnabled = false;
-            };
-            connectLocal.Checked += (a, b) => importSettings.IsEnabled = true;
+                connectLocal.IsChecked = BlendFarmSettings.Instance.Option_ConnectLocal;
+                if (_noServer)
+                {
+                    connectLocal.IsChecked = false;
+                    connectLocal.IsEnabled = false;
+                }
+                if (!(connectLocal.IsChecked ?? false) && importSettings != null)
+                    importSettings.IsEnabled = false;
 
-            comboVersions = this.FindControl<ComboBox>("versionSelect");
+                connectLocal.Unchecked += (a, b) =>
+                {
+                    if (importSettings != null)
+                    {
+                        importSettings.IsChecked = false;
+                        importSettings.IsEnabled = false;
+                    }
+                };
+                connectLocal.Checked += (a, b) =>
+                {
+                    if (importSettings != null)
+                        importSettings.IsEnabled = true;
+                };
+            }
+            if (importSettings != null)
+                importSettings.IsChecked = BlendFarmSettings.Instance.Option_ImportSettings;
+
             ReloadVersions();
 
-            history = this.FindControl<ListBox>("history");
-            history.Items = BlendFarmSettings.Instance.History.ToList();
+            history.ItemsSource = BlendFarmSettings.Instance.History.ToList();
             history.SelectedItem = null;
             history.SelectionChanged += (a, b) =>
             {
@@ -188,7 +181,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                     string list = ((HistoryEntry)b.AddedItems[0]).Path;
                     //history.SelectedItems = null;
 
-                    fileSelection.Text = list;
+                    fileSelect.Text = list;
                 }
             };
 
@@ -220,7 +213,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                     $"Failed to retrieve versions due to {ex.Message}, this may be due to no internet connection.An internet connection is required to retrieve version info and download Blender installations. Restart application with internet connection for Blender versions..",
                     600, 250);
             }
-            comboVersions.Items = versions;
+            versionSelect.ItemsSource = versions;
             int selectedIndex = 0;
             if (!string.IsNullOrEmpty(BlendFarmSettings.Instance.LastVersion))
             {
@@ -228,7 +221,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 if (lastVersion != null)
                     selectedIndex = versions.IndexOf(lastVersion);
             }
-            comboVersions.SelectedIndex = selectedIndex;
+            versionSelect.SelectedIndex = selectedIndex;
         }
         public async void ShowCustomWizard()
         {
@@ -272,7 +265,7 @@ This may have to do with the port being in use. Note that to discover other pcs 
                 Console.Write("ShowFileDialog Results: " + string.Join(", ", results));
                 if (results.Length > 0)
                 {
-                    fileSelection.Text = results[0];
+                    fileSelect.Text = results[0];
                 }
             }
         }
@@ -298,8 +291,8 @@ This may have to do with the port being in use. Note that to discover other pcs 
         {
             loadingText.Text = "Loading project";
             ShowLoadProjectUI(false);
-            string file = fileSelection.Text;
-            BlenderVersion version = (BlenderVersion)comboVersions.SelectedItem;
+            string file = fileSelect.Text;
+            BlenderVersion version = (BlenderVersion)versionSelect.SelectedItem;
 
             if (!File.Exists(file))
             {

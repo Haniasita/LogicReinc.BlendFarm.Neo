@@ -11,10 +11,8 @@ using static LogicReinc.BlendFarm.BlendFarmSettings;
 
 namespace LogicReinc.BlendFarm.Windows
 {
-    public class DeviceSettingsWindow : Window
+    public partial class DeviceSettingsWindow : Window
     {
-        private ComboBox selectRenderType = null;
-
         public RenderType[] RenderTypes { get; } = (RenderType[])Enum.GetValues(typeof(RenderType));
         public RenderNode Node { get; set; }
 
@@ -43,7 +41,6 @@ namespace LogicReinc.BlendFarm.Windows
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            selectRenderType = this.Find<ComboBox>("selectRenderType");
             selectRenderType.SelectedItem = Node.RenderType;
             Width = 300;
             Height = 300;

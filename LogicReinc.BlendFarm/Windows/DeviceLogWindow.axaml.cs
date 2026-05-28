@@ -12,7 +12,7 @@ using static LogicReinc.BlendFarm.BlendFarmSettings;
 
 namespace LogicReinc.BlendFarm.Windows
 {
-    public class DeviceLogWindow : Window
+    public partial class DeviceLogWindow : Window
     {
         private ScrollViewer _scroller;
         private TextBlock _log;

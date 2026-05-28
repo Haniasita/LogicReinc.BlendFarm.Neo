@@ -6,7 +6,6 @@
         x:Class="LogicReinc.BlendFarm.Windows.ProjectWindow"
         Title="BlendFarm by LogicReinc" Background="#222222">
   <Window.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
   </Window.Styles>
 
 

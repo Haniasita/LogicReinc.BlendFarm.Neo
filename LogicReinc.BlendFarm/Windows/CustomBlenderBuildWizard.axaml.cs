@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace LogicReinc.BlendFarm.Windows
 {
-    public class CustomBlenderBuildWizard : Window
+    public partial class CustomBlenderBuildWizard : Window
     {
         private StackPanel _interfaceWarning = null;
         private StackPanel _interfaceName = null;

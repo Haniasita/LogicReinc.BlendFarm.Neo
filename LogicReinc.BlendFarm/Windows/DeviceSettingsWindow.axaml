@@ -6,7 +6,6 @@
         x:Class="LogicReinc.BlendFarm.Windows.DeviceSettingsWindow"
         Title="DeviceSettingsWindow">
   <Window.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
   </Window.Styles>
   <StackPanel Width="400" Height="400">
     <TextBlock Text="{Binding Node.Name}" Margin="10,20,10,5" FontSize="20" HorizontalAlignment="Center" />
@@ -23,7 +22,7 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="10,0,10,0">
         <TextBlock Margin="5" Width="160" TextAlignment="Right" FontSize="15" Text="RenderType:" HorizontalAlignment="Right" />
-        <ComboBox x:Name="selectRenderType" Width="150" Margin="10,0,0,0" Items="{Binding RenderTypes}" FontSize="15"></ComboBox>
+        <ComboBox x:Name="selectRenderType" Width="150" Margin="10,0,0,0" ItemsSource="{Binding RenderTypes}" FontSize="15"></ComboBox>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="10,0,10,0">
         <TextBlock Margin="5" Width="160" TextAlignment="Right" FontSize="15" Text="Performance:" HorizontalAlignment="Right" ToolTip.Tip="Used when Auto-Performance disabled, use cores when zero or below" />

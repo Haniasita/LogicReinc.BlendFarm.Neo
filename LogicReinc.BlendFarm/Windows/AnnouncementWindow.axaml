@@ -11,7 +11,7 @@
   </Window.Resources>
 
   <Grid ColumnDefinitions="*" RowDefinitions="30,70,*">
-    <ComboBox Background="#222" x:Name="announcementSelection" BorderBrush="#222" Foreground="Gray" Grid.Row="0" SelectedItem="{Binding Announcement}" Items="{Binding Announcements}" >
+    <ComboBox Background="#222" x:Name="announcementSelection" BorderBrush="#222" Foreground="Gray" Grid.Row="0" SelectedItem="{Binding Announcement}" ItemsSource="{Binding Announcements}" >
       <ComboBox.ItemTemplate>
         <DataTemplate>
           <StackPanel Orientation="Horizontal">
@@ -23,7 +23,7 @@
       </ComboBox.ItemTemplate>
     </ComboBox>
       <TextBlock Grid.Row="1" Text="{Binding Announcement.Name}" Foreground="White" FontSize="30" Margin="10,25,10,10" HorizontalAlignment="Center" />
-      <ListBox Grid.Row="2" Margin="0,0,0,0" Padding="0" Background="Transparent" BorderBrush="Transparent" Items="{Binding Announcement.Segments}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <ListBox Grid.Row="2" Margin="0,0,0,0" Padding="0" Background="Transparent" BorderBrush="Transparent" ItemsSource="{Binding Announcement.Segments}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <ListBox.Styles>
           <Style Selector="ListBoxItem:selected /template/ContentPresenter">
             <Setter Property="Background" Value="Transparent" />

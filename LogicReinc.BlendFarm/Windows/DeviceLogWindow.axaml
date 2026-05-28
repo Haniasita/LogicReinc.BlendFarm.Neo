@@ -6,7 +6,6 @@
         x:Class="LogicReinc.BlendFarm.Windows.DeviceLogWindow"
         Title="DeviceLogWindow">
   <Window.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
   </Window.Styles>
   <DockPanel HorizontalAlignment="Stretch" LastChildFill="true" Background="Black">
 	  <ScrollViewer VerticalScrollBarVisibility="Auto" AllowAutoHide="True" Name="scroller">

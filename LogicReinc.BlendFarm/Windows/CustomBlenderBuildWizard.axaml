@@ -6,7 +6,6 @@
         x:Class="LogicReinc.BlendFarm.Windows.CustomBlenderBuildWizard"
         Title="CustomBlenderBuildWizard">
   <Window.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
   </Window.Styles>
   <StackPanel>
     <StackPanel Name="interfaceWarning" Orientation="Vertical" IsVisible="False">

@@ -7,7 +7,6 @@
         xmlns:convs="clr-namespace:LogicReinc.BlendFarm.Converters;assembly=LogicReinc.BlendFarm"
         Title="BlendFarm by LogicReinc">
   <Window.Styles>
-    <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml" />
     <Style Selector="TabItem:selected">
       <Setter Property="Background" Value="#332a54"/>
     </Style>
@@ -21,7 +20,7 @@
       <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="*" ColumnDefinitions="*,35,50">
 
         
-        <ListBox Items="{Binding Projects}" BorderBrush="Transparent" Padding="0,0,0,0" SelectionChanged="ProjectTabChanged" SelectedIndex="{Binding TabScrollIndex}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+        <ListBox ItemsSource="{Binding Projects}" BorderBrush="Transparent" Padding="0,0,0,0" SelectionChanged="ProjectTabChanged" SelectedIndex="{Binding TabScrollIndex}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
           <ListBox.Styles>
             <Style Selector="ListBoxItem:selected /template/ContentPresenter">
               <Setter Property="Background" Value="#332a54" />
@@ -40,7 +39,7 @@
         </ListBox>
 
         <!--
-        <TabControl Items="{Binding Projects}" SelectionChanged="ProjectTabChanged" SelectedIndex="{Binding TabScrollIndex}">
+        <TabControl ItemsSource="{Binding Projects}" SelectionChanged="ProjectTabChanged" SelectedIndex="{Binding TabScrollIndex}">
           <TabControl.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel>
@@ -136,7 +135,7 @@
                   <StackPanel Margin="0,10,0,0">
                     <TextBlock>Render Nodes</TextBlock>
                     <!--RenderNodes -->
-                    <ListBox Margin="0,10,10,10" x:Name="listNodes" Items="{Binding Nodes}" Height="300">
+                    <ListBox Margin="0,10,10,10" x:Name="listNodes" ItemsSource="{Binding Nodes}" Height="300">
                       <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                           <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -282,7 +281,7 @@
                               <TextBlock Width="60" TextAlignment="Right" Margin="10" ToolTip.Tip="Denoiser to use, Inherit means the one selected in Blendfile.">
                                 Denoiser
                               </TextBlock>
-                              <ComboBox SelectedIndex="0" Width="80" Items="{Binding DenoiserOptions}" SelectedItem="{Binding CurrentProject.Denoiser}">
+                              <ComboBox SelectedIndex="0" Width="80" ItemsSource="{Binding DenoiserOptions}" SelectedItem="{Binding CurrentProject.Denoiser}">
                               </ComboBox>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
@@ -360,7 +359,7 @@
                             <CheckBox Width="90" Margin="10" HorizontalContentAlignment="Right" IsChecked="{Binding CurrentProject.UseFPS}">FPS</CheckBox>
                             <NumericUpDown Width="80" Value="{Binding CurrentProject.FPS}" IsEnabled="{Binding CurrentProject.UseFPS}" />
 							<TextBlock Width="55" TextAlignment="Right" Margin="10" ToolTip.Tip="File format Blender should render in">Output</TextBlock>
-						    <ComboBox x:Name="selectOutputType" Margin="0,0,0,0" Width="80" Items="{Binding ImageFormats}" SelectedItem="{Binding CurrentProject.RenderFormat}" FontSize="15"></ComboBox>
+						    <ComboBox x:Name="selectOutputType" Margin="0,0,0,0" Width="80" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding CurrentProject.RenderFormat}" FontSize="15"></ComboBox>
                           </StackPanel>
                           <StackPanel IsVisible="{Binding !IsQueueing}">
                             <Button Margin="10,10,10,5" IsVisible="{Binding !CurrentProject.IsRendering}" Command="{Binding RenderAnimation}" Background="#400083" BorderBrush="#200041">
@@ -407,7 +406,7 @@
                             <TextBlock Width="55" TextAlignment="Right" Margin="10" ToolTip.Tip="Which engine to use. Optix will adhere to CUDA settings. Otherwise CPU is used.">
                               Engine
                             </TextBlock>
-                            <ComboBox x:Name="selectRenderType" Margin="0,0,0,0" Items="{Binding EngineOptions}" SelectedItem="{Binding CurrentProject.Engine}" FontSize="15"></ComboBox>
+                            <ComboBox x:Name="selectRenderType" Margin="0,0,0,0" ItemsSource="{Binding EngineOptions}" SelectedItem="{Binding CurrentProject.Engine}" FontSize="15"></ComboBox>
                             <!--<CheckBox IsChecked="{Binding CurrentProject.UseEevee}" /> -->
                           </StackPanel>
                           <StackPanel Orientation="Vertical">
@@ -445,7 +444,7 @@
               </TabItem>
               <TabItem Header="{Binding QueueName}" IsEnabled="{Binding IsQueueing}">
                 <!--BEGIN QUEUE-->
-                <ListBox Items="{Binding Queue}">
+                <ListBox ItemsSource="{Binding Queue}">
                   <ListBox.ItemTemplate>
                     <DataTemplate>
                       <Canvas Height="60">

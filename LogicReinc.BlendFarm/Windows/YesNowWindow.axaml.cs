@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LogicReinc.BlendFarm.Windows
 {
-    public class YesNoWindow : Window
+    public partial class YesNoWindow : Window
     {
         public string MsgTitle { get; set; }
         public string Description { get; set; }
