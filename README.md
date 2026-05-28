@@ -12,7 +12,7 @@ Special thanks to :
 
 ### Planned improvements :
 - ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
-- ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled ✓
+- ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled, cross-platform compatibility added ✓
 - Implement network benchmarking runs to get accurate tile splits on first render
 
 - Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
