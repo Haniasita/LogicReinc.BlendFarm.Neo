@@ -3,7 +3,8 @@
 This is an unofficial fork of LogicReinc's BlendFarm software, with various changes and improvements. 
 This was created for personal use only, out of a desire to supersede BlendFarm's latest patch, which is currently 2 years old.
 
-This is experimental, so use at your own risk! Code review and pull requests are appreciated.
+This is experimental, so use at your own risk! Current code may be broken!
+Code review and pull requests are appreciated.
 
 Special thanks to : 
 - LogicReinc for the base software : https://github.com/LogicReinc/LogicReinc.BlendFarm
