@@ -20,6 +20,7 @@ Special thanks to :
 - Improve unit tests
 - Batch Animation Frames (Reduce "Render Loading.. between frames)
 - Settings Interface
+- Validate Apple Silicon compatibility
 - TCP protocol (and other places) may benefit from minor memory improvements
 - Auto-merge animations into video/gifs
 - Render Focus (target a specific area to render first)

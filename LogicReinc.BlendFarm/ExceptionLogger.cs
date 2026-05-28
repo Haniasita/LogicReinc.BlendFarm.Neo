@@ -9,7 +9,8 @@ namespace LogicReinc.BlendFarm
     /// </summary>
     public static class ExceptionLogger
     {
-        private static HashSet<string> _loggedExceptions = new HashSet<string>();
+        private static readonly object _lockObj = new object();
+        private static HashSet<string> _loggedExceptions = new();
 
         public static void Configure()
         {
@@ -38,10 +39,13 @@ namespace LogicReinc.BlendFarm
         {
             string exceptionKey = $"{ex.GetType().FullName}:{ex.Message}:{ex.StackTrace}";
 
-            if (isFirstChance && _loggedExceptions.Contains(exceptionKey))
-                return;
+            lock (_lockObj)
+            {
+                if (isFirstChance && _loggedExceptions.Contains(exceptionKey))
+                    return;
 
-            _loggedExceptions.Add(exceptionKey);
+                _loggedExceptions.Add(exceptionKey);
+            }
 
             Console.WriteLine($"\n{'='} {title} {'='}\n");
             LogExceptionDetails(ex, depth: 0);
