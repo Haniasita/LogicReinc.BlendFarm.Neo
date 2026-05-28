@@ -1,7 +1,9 @@
 param(
     [string]$Platform,
     [string]$Targets,
-    [string]$Version
+    [string]$Version,
+    [switch]$RunTests,
+    [switch]$CleanBlender
 )
 
 $ErrorActionPreference = "Stop"
@@ -128,6 +130,38 @@ Write-Host "Platforms: $($PlatformList -join ',')"
 Write-Host "Targets:   $($TargetList -join ',')"
 Write-Host ""
 
+# Run tests
+Write-Host "========== Running Tests ==========" -ForegroundColor Cyan
+Write-Host "Running ParsingTest (fast unit tests)..."
+& dotnet test "LogicReinc.BlendFarm.Tests/LogicReinc.BlendFarm.Tests.csproj" `
+    --filter "ClassName=ParsingTest" -c Release --no-build
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Unit tests failed" -ForegroundColor Red
+    exit 1
+}
+
+if ($RunTests) {
+    Write-Host ""
+    Write-Host "Running full integration tests (requires Blender)..."
+    & dotnet test "LogicReinc.BlendFarm.Tests/LogicReinc.BlendFarm.Tests.csproj" `
+        -c Release --no-build
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Error: Integration tests failed" -ForegroundColor Red
+        exit 1
+    }
+}
+
+if ($CleanBlender) {
+    Write-Host ""
+    Write-Host "Cleaning up Blender cache..."
+    if (Test-Path "BlenderData" -PathType Container) {
+        Remove-Item "BlenderData" -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Blender cache removed"
+    }
+}
+
+Write-Host ""
+
 # Function to build a component for a platform
 function Build-Component {
     param(
@@ -193,8 +227,6 @@ function Package-MacOSArm {
         [string]$Component
     )
 
-    Write-Host "========== Packaging $Component macOS ARM64 (.app bundle) ==========" -ForegroundColor Green
-
     $capitalComponent = (Get-Culture).TextInfo.ToTitleCase($Component)
     $pkgName = "BlendFarm-Neo-$versionWithBuild-$capitalComponent-macos-arm64"
     $pkgDir = "Releases/BlendFarm-Neo-$versionWithBuild/$pkgName"
@@ -242,7 +274,7 @@ function Package-MacOSArm {
     return $true
 }
 
-# Build and package
+# Build all components
 foreach ($platform in $PlatformList) {
     $rid = $platformConfig[$platform]
 
@@ -252,9 +284,15 @@ foreach ($platform in $PlatformList) {
     }
 
     foreach ($target in $TargetList) {
-        # Build
         Build-Component -Component $target -Platform $platform -RID $rid
+    }
+}
 
+# Package all components
+foreach ($platform in $PlatformList) {
+    $rid = $platformConfig[$platform]
+
+    foreach ($target in $TargetList) {
         # Determine executable name
         $exeName = if ($target -eq "server") {
             if ($platform -eq "windows") { "LogicReinc.BlendFarm.Server.exe" } else { "LogicReinc.BlendFarm.Server" }
@@ -281,11 +319,3 @@ Write-Host ""
 Write-Host "========== BUILD COMPLETE ==========" -ForegroundColor Cyan
 Write-Host "Release packages ready in ./Releases/BlendFarm-Neo-$versionWithBuild/" -ForegroundColor Green
 Write-Host ""
-
-$releaseDir = "Releases/BlendFarm-Neo-$versionWithBuild"
-if (Test-Path $releaseDir) {
-    Get-ChildItem "$releaseDir/*.zip" | ForEach-Object {
-        $sizeMB = [Math]::Round($_.Length / 1MB, 2)
-        Write-Host "  $($_.Name) ($sizeMB MB)" -ForegroundColor Gray
-    }
-}

@@ -3,11 +3,15 @@
 set -e
 
 # Parse command line arguments
+RUN_TESTS=false
+CLEAN_BLENDER=false
 while [[ $# -gt 0 ]]; do
   case $1 in
     --platform) PLATFORM="$2"; shift 2 ;;
     --targets) TARGETS="$2"; shift 2 ;;
     --version) version="$2"; shift 2 ;;
+    --run-tests) RUN_TESTS=true; shift ;;
+    --clean-blender) CLEAN_BLENDER=true; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -110,6 +114,36 @@ echo "Platforms: $(IFS=,; echo "${PLATFORMS[*]}")"
 echo "Targets:   $(IFS=,; echo "${BUILD_TARGETS[*]}")"
 echo ""
 
+# Run tests
+echo "========== Running Tests =========="
+echo "Running ParsingTest (fast unit tests)..."
+if ! dotnet test LogicReinc.BlendFarm.Tests/LogicReinc.BlendFarm.Tests.csproj \
+  --filter "ClassName=ParsingTest" -c Release --no-build; then
+  echo "Error: Unit tests failed" >&2
+  exit 1
+fi
+
+if [ "$RUN_TESTS" = true ]; then
+  echo ""
+  echo "Running full integration tests (requires Blender)..."
+  if ! dotnet test LogicReinc.BlendFarm.Tests/LogicReinc.BlendFarm.Tests.csproj \
+    -c Release --no-build; then
+    echo "Error: Integration tests failed" >&2
+    exit 1
+  fi
+fi
+
+if [ "$CLEAN_BLENDER" = true ]; then
+  echo ""
+  echo "Cleaning up Blender cache..."
+  if [ -d "BlenderData" ]; then
+    rm -rf "BlenderData"
+    echo "Blender cache removed"
+  fi
+fi
+
+echo ""
+
 # Function to build a component for a platform
 build_component() {
   local component=$1
@@ -172,8 +206,6 @@ package_build() {
 package_macos_arm() {
   local component=$1
 
-  echo "========== Packaging $component macOS ARM64 (.app bundle) =========="
-
   local pkg_name="BlendFarm-Neo-$version_with_build-$(capitalize_first $component)-macos-arm64"
   local pkg_dir="Releases/BlendFarm-Neo-$version_with_build/$pkg_name"
   local release_base="Releases/BlendFarm-Neo-$version_with_build"
@@ -217,7 +249,7 @@ capitalize_first() {
   echo "$1" | sed 's/^\(.\)/\U\1/'
 }
 
-# Build and package
+# Build all components
 for platform in "${PLATFORMS[@]}"; do
   platform=$(echo "$platform" | xargs)
   rid="${platform_config[$platform]}"
@@ -229,9 +261,17 @@ for platform in "${PLATFORMS[@]}"; do
 
   for target in "${BUILD_TARGETS[@]}"; do
     target=$(echo "$target" | xargs)
-
-    # Build
     build_component "$target" "$platform" "$rid"
+  done
+done
+
+# Package all components
+for platform in "${PLATFORMS[@]}"; do
+  platform=$(echo "$platform" | xargs)
+  rid="${platform_config[$platform]}"
+
+  for target in "${BUILD_TARGETS[@]}"; do
+    target=$(echo "$target" | xargs)
 
     # Determine executable name
     if [ "$target" = "server" ]; then
@@ -266,4 +306,3 @@ echo ""
 echo "========== BUILD COMPLETE =========="
 echo "Release packages ready in ./Releases/BlendFarm-Neo-$version_with_build/"
 echo ""
-ls -lh "Releases/BlendFarm-Neo-$version_with_build"/*.zip 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
