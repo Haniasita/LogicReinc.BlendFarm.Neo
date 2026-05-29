@@ -17,6 +17,7 @@ Special thanks to :
 - ~~Validate Apple Silicon compatibility~~ Both client and server functional on M-series Mac's, tested with macOS Tahoe 26.5 ✓
 - Implement network benchmarking runs to get accurate tile splits on first render
 - Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
+- Split client & manager roles, flamenco-style, while preserving current expected out-of-the-box functionality
 - General UI redesign
 - Improve unit tests
 - Batch Animation Frames (Reduce "Render Loading.. between frames)
