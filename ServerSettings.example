@@ -1,0 +1,11 @@
+{
+  "Port": 15000,
+  "BroadcastPort": 16342,
+  "BlenderData": "BlenderData",
+  "RenderData": "RenderData",
+  "BlenderFiles": "BlenderFiles",
+  "BypassScriptUpdate": false,
+  "BasicSecurityPassword": null,
+  "EnableAutoSleep": false,
+  "AutoSleepTimeoutSeconds": 1800
+}

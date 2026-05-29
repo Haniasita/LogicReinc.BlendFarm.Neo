@@ -209,6 +209,13 @@ package_build() {
     fi
   done
 
+  # Bundle ServerSettings.example
+  if [ "$component" = "server" ]; then
+    if [ -f "ServerSettings.example" ]; then
+      cp "ServerSettings.example" "$pkg_dir/"
+    fi
+  fi
+
   if [ "$create_zip" = true ]; then
     cd "Releases/BlendFarm-Neo-$version_with_build"
     zip -q -r "${pkg_name}.zip" "$pkg_name"

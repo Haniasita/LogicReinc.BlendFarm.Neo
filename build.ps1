@@ -231,6 +231,13 @@ function Package-Build {
         }
     }
 
+    # Bundle ServerSettings.example
+    if ($Component -eq "server") {
+        if (Test-Path "ServerSettings.example") {
+            Copy-Item "ServerSettings.example" "$pkgDir/"
+        }
+    }
+
     if ($CreateZip) {
         Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
         Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
