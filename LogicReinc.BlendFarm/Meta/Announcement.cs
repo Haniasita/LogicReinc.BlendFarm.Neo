@@ -74,15 +74,14 @@ namespace LogicReinc.BlendFarm.Meta
                         using (MemoryStream stream = new(imageData))
                         {
                             Bitmap bitmap = new(stream);
-                            _bitmapCache.Add(TextPart1, bitmap);
+                            _bitmapCache.TryAdd(TextPart1, bitmap);
                         }
                         if (_bitmapCache.ContainsKey(TextPart1))
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BitmapFromText)));
                     }
                     catch (Exception)
                     {
-                        if (!_bitmapCache.ContainsKey(TextPart1))
-                            _bitmapCache.Add(TextPart1, null);
+                        _bitmapCache.TryAdd(TextPart1, null);
                     }
                 });
                 return null;

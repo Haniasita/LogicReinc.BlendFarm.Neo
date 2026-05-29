@@ -13,7 +13,7 @@
 			},
 			{
 				"Type": "Image",
-				"Text": "https://raw.githubusercontent.com/Haniasita/LogicReinc.BlendFarm.Neo/neo-main/.data/blender5.1-art.jpg"
+				"Text": "https://raw.githubusercontent.com/Haniasita/LogicReinc.BlendFarm.Neo/neo-main/.data/blender5.1-art.png"
 			},
 			{
 				"Type": "Button",
@@ -21,7 +21,7 @@
 			},
 			{
 				"Type": "Button",
-				"Text": "View original GitHub|https://github.com/LogicReinc/LogicReinc.BlendFarm"
+				"Text": "View LogicReinc's GitHub|https://github.com/LogicReinc/LogicReinc.BlendFarm"
 			},
 			{
 				"Type": "Empty",
