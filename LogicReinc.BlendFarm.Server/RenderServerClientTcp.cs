@@ -53,10 +53,16 @@ namespace LogicReinc.BlendFarm.Server
         {
             _ = Task.Run(() =>
             {
-                SendPacket(new ConsoleActivityResponse()
+                try
                 {
-                    Output = text
-                });
+                    SendPacket(new ConsoleActivityResponse()
+                    {
+                        Output = text
+                    });
+                }
+                catch
+                {
+                }
             });
         }
 

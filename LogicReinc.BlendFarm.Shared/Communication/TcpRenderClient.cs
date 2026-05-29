@@ -174,21 +174,35 @@ namespace LogicReinc.BlendFarm.Shared.Communication
             BinaryReader reader = new BinaryReader(str);
             while (Listening)
             {
+                try
+                {
+                    _ = await str.ReadAsync(headerBytes, 0, MAX_HEADER_SIZE, _cancel.Token);
+                    if (headerBytes.Length != MAX_HEADER_SIZE)
+                        throw new InvalidDataException($"Expected header of length {MAX_HEADER_SIZE}");
+                    string header = Encoding.UTF8.GetString(headerBytes).Trim('_');
 
-                _ = await str.ReadAsync(headerBytes, 0, MAX_HEADER_SIZE, _cancel.Token);
-                if (headerBytes.Length != MAX_HEADER_SIZE)
-                    throw new InvalidDataException($"Expected header of length {MAX_HEADER_SIZE}");
-                string header = Encoding.UTF8.GetString(headerBytes).Trim('_');
+                    _ = await str.ReadAsync(sizeBytes, 0, 4, _cancel.Token);
+                    if (sizeBytes.Length != 4)
+                        throw new InvalidDataException($"Expected size of length 4");
+                    int size = (int)BinaryParser.Deserialize(sizeBytes, typeof(int));
 
-                _ = await str.ReadAsync(sizeBytes, 0, 4, _cancel.Token);
-                if (sizeBytes.Length != 4)
-                    throw new InvalidDataException($"Expected size of length 4");
-                int size = (int)BinaryParser.Deserialize(sizeBytes, typeof(int));
+                    if (header != "consoleActivityResponse")
+                        Console.WriteLine($"Received {header} [{size}] from {Client.Client.RemoteEndPoint}");
 
-                if (header != "consoleActivityResponse")
-                    Console.WriteLine($"Received {header} [{size}] from {Client.Client.RemoteEndPoint}");
-
-                HandlePacket(header, reader);
+                    HandlePacket(header, reader);
+                }
+                catch (SocketException)
+                {
+                    break;
+                }
+                catch (IOException ex) when (ex.InnerException is SocketException)
+                {
+                    break;
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
         }
 
