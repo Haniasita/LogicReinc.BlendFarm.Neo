@@ -231,11 +231,12 @@ function Package-Build {
         }
     }
 
-    # Bundle ServerSettings.example
-    if ($Component -eq "server") {
-        if (Test-Path "ServerSettings.example") {
-            Copy-Item "ServerSettings.example" "$pkgDir/"
-        }
+    # Bundle example configuration files
+    if (Test-Path "ServerSettings.example") {
+        Copy-Item "ServerSettings.example" "$pkgDir/"
+    }
+    if ($Component -eq "client" -and (Test-Path "ClientSettings.example")) {
+        Copy-Item "ClientSettings.example" "$pkgDir/"
     }
 
     if ($CreateZip) {

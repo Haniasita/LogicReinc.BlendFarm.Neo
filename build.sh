@@ -209,11 +209,12 @@ package_build() {
     fi
   done
 
-  # Bundle ServerSettings.example
-  if [ "$component" = "server" ]; then
-    if [ -f "ServerSettings.example" ]; then
-      cp "ServerSettings.example" "$pkg_dir/"
-    fi
+  # Bundle example configuration files
+  if [ -f "ServerSettings.example" ]; then
+    cp "ServerSettings.example" "$pkg_dir/"
+  fi
+  if [ "$component" = "client" ] && [ -f "ClientSettings.example" ]; then
+    cp "ClientSettings.example" "$pkg_dir/"
   fi
 
   if [ "$create_zip" = true ]; then
