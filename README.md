@@ -14,7 +14,7 @@ Special thanks to :
 
 - ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
 - ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled, cross-platform compatibility added ✓
-- ~~Validate Apple Silicon compatibility~~ macos-arm added as build target, needs testing !
+- ~~Validate Apple Silicon compatibility~~ Both client and server functional on M-series Mac's, tested with macOS Tahoe 26.5 ✓
 - Implement network benchmarking runs to get accurate tile splits on first render
 - Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
 - General UI redesign
