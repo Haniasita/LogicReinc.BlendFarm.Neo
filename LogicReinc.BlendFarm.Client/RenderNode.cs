@@ -613,6 +613,10 @@ namespace LogicReinc.BlendFarm.Client
                         resp = await Client.Send<RenderResponse>(req, _taskCancelToken.Token);
                         break;
                     }
+                    catch (OperationCanceledException)
+                    {
+                        return null;
+                    }
                     catch (BlendFarmDisconnectedException)
                     {
                         recoverAtts++;
