@@ -96,7 +96,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                             exceptions.Add(lastException);
                     });
 
-                    if (finished != _usedNodes.Count)
+                    if (finished != _usedNodes.Count && !Cancelled)
                         throw new AggregateException("Not all tiles rendered", exceptions.Select(x => new Exception(x)));
 
                     return result;
