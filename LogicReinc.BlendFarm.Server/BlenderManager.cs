@@ -598,7 +598,7 @@ namespace LogicReinc.BlendFarm.Server
             string cmd = $"{blenderDir}/blender";
 
             //MacOS has to be special.
-            if (SystemInfo.IsOS(SystemInfo.OS_MACOS))
+            if (SystemInfo.IsOS(SystemInfo.OS_MACOS) || SystemInfo.IsOS(SystemInfo.OS_MACOSARM64))
                 cmd = $"{blenderDir}/Contents/MacOS/Blender";
 
             return cmd;

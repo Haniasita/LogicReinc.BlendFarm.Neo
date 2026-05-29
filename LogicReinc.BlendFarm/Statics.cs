@@ -58,5 +58,19 @@ namespace LogicReinc.BlendFarm
                 return new Bitmap(str);
             }
         }
+
+        public static Bitmap ToAvaloniaBitmap(this SkiaSharp.SKBitmap bitmap)
+        {
+            using (MemoryStream str = new MemoryStream())
+            {
+                using (var image = SkiaSharp.SKImage.FromBitmap(bitmap))
+                {
+                    var encoded = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                    encoded.SaveTo(str);
+                }
+                str.Position = 0;
+                return new Bitmap(str);
+            }
+        }
     }
 }

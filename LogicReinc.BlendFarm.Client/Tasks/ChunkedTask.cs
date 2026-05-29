@@ -1,8 +1,8 @@
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 
@@ -11,10 +11,10 @@ namespace LogicReinc.BlendFarm.Client.Tasks
     public class ChunkedTask : QueuedExecutionTask, IImageTask
     {
         private object _drawLock = new object();
-        private Bitmap result;
-        private Graphics g;
+        private SKBitmap result;
+        private SKCanvas g;
 
-        public Image FinalImage { get; private set; }
+        public SKBitmap FinalImage { get; private set; }
 
         public ChunkedTask(List<RenderNode> nodes, string session, string version, long fileId, RenderManagerSettings settings = null) : base(nodes, session, version, fileId, settings)
         {
@@ -22,8 +22,8 @@ namespace LogicReinc.BlendFarm.Client.Tasks
 
         protected override void Setup()
         {
-            result = new Bitmap(Settings.OutputWidth, Settings.OutputHeight);
-            g = Graphics.FromImage(result);
+            result = new SKBitmap(Settings.OutputWidth, Settings.OutputHeight);
+            g = new SKCanvas(result);
         }
         protected override RenderSubTask[] GetTasks()
         {
@@ -40,7 +40,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         protected override void HandleResult(RenderSubTask task, SubTaskResult tresult)
         {
             ChangeProgress(Progress + task.Value);
-            using (Image img = ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
+            using (SKBitmap img = ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
                 ProcessTile(task, img, ref g, ref result, ref _drawLock);
         }
 

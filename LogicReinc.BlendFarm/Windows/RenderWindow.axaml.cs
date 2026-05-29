@@ -693,7 +693,7 @@ namespace LogicReinc.BlendFarm.Windows
                             if (currentProject == CurrentProject)
                                 RaisePropertyChanged(CurrentProjectProperty, null, CurrentProject);
 
-                            finalImage.Save("lastRender.png");
+                            finalImage.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).SaveTo(new System.IO.FileStream("lastRender.png", System.IO.FileMode.Create));
                         }
                         _lastRenderTime.Text = watch.Elapsed.ToString();
                         this._imageProgress.IsVisible = false;
@@ -785,7 +785,7 @@ namespace LogicReinc.BlendFarm.Windows
                         {
                             try
                             {
-                                using (System.Drawing.Image img = ImageConverter.Convert(frame.Image, task.Parent.Settings.RenderFormat))
+                                using (SkiaSharp.SKBitmap img = ImageConverter.Convert(frame.Image, task.Parent.Settings.RenderFormat))
                                 {
                                     if (img != null)
                                         currentProject.LastImage = img.ToAvaloniaBitmap();

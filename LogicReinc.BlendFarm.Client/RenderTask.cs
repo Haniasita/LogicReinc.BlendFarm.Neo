@@ -2,12 +2,12 @@ using LogicReinc.BlendFarm.Client;
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Client.Tasks;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,11 +53,11 @@ namespace LogicReinc.BlendFarm.Client
         /// <summary>
         /// Event whenever a tile has finished rendering
         /// </summary>
-        public event Action<RenderSubTask, Image> OnTileProcessed;
+        public event Action<RenderSubTask, SKBitmap> OnTileProcessed;
         /// <summary>
         /// Event whenever the result bitmap is changed
         /// </summary>
-        public event Action<RenderSubTask, Image> OnResultUpdated;
+        public event Action<RenderSubTask, SKBitmap> OnResultUpdated;
         /// <summary>
         /// Event whenever progress is made
         /// </summary>
@@ -454,9 +454,9 @@ namespace LogicReinc.BlendFarm.Client
             return new SubTaskResult(result);
         }
 
-        protected void ProcessTile(RenderSubTask task, SubTaskResult tresult, ref Graphics g, ref Bitmap result, ref object drawLock, bool dontDraw = false)
+        protected void ProcessTile(RenderSubTask task, SubTaskResult tresult, ref SkiaSharp.SKCanvas g, ref SkiaSharp.SKBitmap result, ref object drawLock, bool dontDraw = false)
         {
-            using (Image img = LogicReinc.BlendFarm.Client.ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
+            using (var img = LogicReinc.BlendFarm.Client.ImageTypes.ImageConverter.Convert(tresult.Image, task.Parent.Settings.RenderFormat))
             {
                 ProcessTile(task, img, ref g, ref result, ref drawLock, dontDraw);
             }
@@ -464,7 +464,7 @@ namespace LogicReinc.BlendFarm.Client
         /// <summary>
         /// Handles an incoming tile and trigger the events as well as drawing the tile to an image/graphics
         /// </summary>
-        protected void ProcessTile(RenderSubTask task, Image part, ref Graphics g, ref Bitmap result, ref object drawLock, bool dontDraw = false)
+        protected void ProcessTile(RenderSubTask task, SkiaSharp.SKBitmap part, ref SkiaSharp.SKCanvas g, ref SkiaSharp.SKBitmap result, ref object drawLock, bool dontDraw = false)
         {
             if (Cancelled)
                 return;
@@ -475,8 +475,8 @@ namespace LogicReinc.BlendFarm.Client
                 {
                     if (result == null)
                     {
-                        result = new Bitmap(part.Width, part.Height);
-                        g = Graphics.FromImage(result);
+                        result = new SkiaSharp.SKBitmap(part.Width, part.Height);
+                        g = new SkiaSharp.SKCanvas(result);
                     }
                     if (task.Crop)
                     {
@@ -485,10 +485,10 @@ namespace LogicReinc.BlendFarm.Client
                         int posX = (int)(task.X * task.Parent.Settings.OutputWidth);
                         int posY = (int)(task.Parent.Settings.OutputHeight - task.Y * task.Parent.Settings.OutputHeight - tileHeight);
 
-                        g.DrawImage(part, posX, posY, tileWidth, tileHeight);
+                        g.DrawBitmap(part, new SkiaSharp.SKRect(posX, posY, posX + tileWidth, posY + tileHeight));
                     }
                     else
-                        g.DrawImage(part, 0, 0, task.Parent.Settings.OutputWidth, task.Parent.Settings.OutputHeight);
+                        g.DrawBitmap(part, new SkiaSharp.SKRect(0, 0, task.Parent.Settings.OutputWidth, task.Parent.Settings.OutputHeight));
                 }
                 OnResultUpdated?.Invoke(task, result);
             }

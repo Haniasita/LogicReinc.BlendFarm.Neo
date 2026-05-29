@@ -1,6 +1,6 @@
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,12 +12,12 @@ namespace LogicReinc.BlendFarm.Client.ImageTypes
     {
         public static DefaultImageConverter Default { get; } = new DefaultImageConverter();
 
-        public static Image Convert(byte[] bytes, string format)
+        public static SKBitmap Convert(byte[] bytes, string format)
         {
             using (MemoryStream str = new MemoryStream(bytes))
                 return Convert(str, format);
         }
-        public static Image Convert(Stream str, string format)
+        public static SKBitmap Convert(Stream str, string format)
         {
             format = format.ToUpper().Trim();
             switch (format)
@@ -36,6 +36,6 @@ namespace LogicReinc.BlendFarm.Client.ImageTypes
 
     public interface IImageConverter
     {
-        Image FromStream(Stream str);
+        SKBitmap FromStream(Stream str);
     }
 }

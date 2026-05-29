@@ -1,10 +1,10 @@
 using LogicReinc.BlendFarm.Client.Tasks;
 using LogicReinc.BlendFarm.Shared;
 using LogicReinc.BlendFarm.Shared.Communication.RenderNode;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -513,7 +513,7 @@ namespace LogicReinc.BlendFarm.Client
         /// <summary>
         /// Creates a RenderTask for the currently connected nodes, not yet executed
         /// </summary>
-        public RenderTask GetImageTask(string file, RenderManagerSettings settings = null, Action<RenderSubTask, Image> onResultUpdated = null, Action<RenderSubTask, Image> onTileReceived = null)
+        public RenderTask GetImageTask(string file, RenderManagerSettings settings = null, Action<RenderSubTask, SKBitmap> onResultUpdated = null, Action<RenderSubTask, SKBitmap> onTileReceived = null)
         {
             BlendFarmFileSession session = GetOrCreateSession(file);
             CurrentTask = RenderTask.GetImageRenderTask(Nodes.ToList(), session.SessionID, Version, session.FileID, settings);
@@ -552,7 +552,7 @@ namespace LogicReinc.BlendFarm.Client
         /// <summary>
         /// Render with provided settings on connected prepared nodes
         /// </summary>
-        public async Task<Image> Render(string file, RenderManagerSettings settings = null, Action<RenderSubTask, Image> onResultUpdated = null, Action<RenderSubTask, Image> onTileReceived = null)
+        public async Task<SKBitmap> Render(string file, RenderManagerSettings settings = null, Action<RenderSubTask, SKBitmap> onResultUpdated = null, Action<RenderSubTask, SKBitmap> onTileReceived = null)
         {
             if (CurrentTask != null)
                 throw new InvalidOperationException("Already rendering..");
@@ -562,7 +562,7 @@ namespace LogicReinc.BlendFarm.Client
 
                 await CurrentTask.Render();
 
-                Image bitmap = ((CurrentTask is IImageTask) ? (IImageTask)CurrentTask : null)?.FinalImage;
+                SKBitmap bitmap = ((CurrentTask is IImageTask) ? (IImageTask)CurrentTask : null)?.FinalImage;
 
                 return bitmap;
             }

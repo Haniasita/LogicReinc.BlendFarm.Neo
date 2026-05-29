@@ -1,8 +1,8 @@
 <Project>
   <!-- Set the current version of BlendFarm Neo here -->
   <PropertyGroup>
-    <InformationalVersion>1.1.7-unofficial</InformationalVersion>
-    <AssemblyVersion>1.1.7.0</AssemblyVersion>
-    <FileVersion>1.1.7.0</FileVersion>
+    <InformationalVersion>2.0.0-alpha</InformationalVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
 </Project>

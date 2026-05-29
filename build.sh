@@ -195,6 +195,9 @@ package_build() {
   if [ -f "$release_base/$pkg_name.zip" ]; then
     rm -f "$release_base/$pkg_name.zip"
   fi
+  if [ -f "$release_base/$pkg_name.tar.gz" ]; then
+    rm -f "$release_base/$pkg_name.tar.gz"
+  fi
 
   mkdir -p "$pkg_dir"
 
@@ -219,10 +222,17 @@ package_build() {
 
   if [ "$create_zip" = true ]; then
     cd "Releases/BlendFarm-Neo-$version_with_build"
-    zip -q -r "${pkg_name}.zip" "$pkg_name"
-    cd ../..
 
-    echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+    # Use tar.gz for Linux/macOS, zip for Windows
+    if [[ "$platform" =~ ^(linux|macos|macos-arm)$ ]]; then
+      tar -czf "${pkg_name}.tar.gz" "$pkg_name"
+      echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.tar.gz"
+    else
+      zip -q -r "${pkg_name}.zip" "$pkg_name"
+      echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+    fi
+
+    cd ../..
   else
     echo "Built: BlendFarm-Neo-$version_with_build/${pkg_name}/"
   fi
@@ -257,6 +267,9 @@ package_macos_arm() {
   if [ -f "$release_base/$pkg_name.zip" ]; then
     rm -f "$release_base/$pkg_name.zip"
   fi
+  if [ -f "$release_base/$pkg_name.tar.gz" ]; then
+    rm -f "$release_base/$pkg_name.tar.gz"
+  fi
 
   mkdir -p "$pkg_dir"
   cp "Deploy/LogicReinc.BlendFarm/_Resources/BlendFarm-___-OSX-ARM64/LogicReinc.BlendFarm.app" -R "$pkg_dir/"
@@ -266,10 +279,10 @@ package_macos_arm() {
 
   if [ "$create_zip" = true ]; then
     cd "Releases/BlendFarm-Neo-$version_with_build"
-    zip -q -r "${pkg_name}.zip" "$pkg_name"
+    tar -czf "${pkg_name}.tar.gz" "$pkg_name"
     cd ../..
 
-    echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+    echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.tar.gz"
   else
     echo "Built: BlendFarm-Neo-$version_with_build/${pkg_name}/"
   fi

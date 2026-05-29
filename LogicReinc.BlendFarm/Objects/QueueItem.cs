@@ -46,7 +46,7 @@ namespace LogicReinc.BlendFarm.Objects
 
         public bool FinishedAllFrames { get; set; }
 
-        public System.Drawing.Image LastImage { get; set; }
+        public SkiaSharp.SKBitmap LastImage { get; set; }
 
         public QueueItem(RenderWindow owner, OpenBlenderProject proj, RenderManagerSettings settings, string saveTo = null, int frames = 1)
         {
@@ -107,12 +107,12 @@ namespace LogicReinc.BlendFarm.Objects
                     Thread.Sleep(500);
 
                     await Task.Render();
-                    System.Drawing.Image final = ((Task is IImageTask) ? (IImageTask)Task : null)?.FinalImage;
+                    SkiaSharp.SKBitmap final = ((Task is IImageTask) ? (IImageTask)Task : null)?.FinalImage;
                     Thread.Sleep(500);
                     LastImage = final;
 
-                    if (!string.IsNullOrEmpty(SaveTo))
-                        final.Save(SaveTo);
+                    if (!string.IsNullOrEmpty(SaveTo) && final != null)
+                        final.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).SaveTo(new System.IO.FileStream(SaveTo, System.IO.FileMode.Create));
 
                     //Apply final to canvas
                     _ = Dispatcher.UIThread.InvokeAsync(() =>
@@ -146,7 +146,7 @@ namespace LogicReinc.BlendFarm.Objects
                             return;
                         }
 
-                        using (System.Drawing.Image image = ImageConverter.Convert(frame.Image, task.Parent.Settings.RenderFormat))
+                        using (SkiaSharp.SKBitmap image = ImageConverter.Convert(frame.Image, task.Parent.Settings.RenderFormat))
                         {
                             if (image != null)
                             {

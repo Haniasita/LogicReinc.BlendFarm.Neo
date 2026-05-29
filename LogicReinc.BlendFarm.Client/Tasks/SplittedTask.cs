@@ -1,9 +1,9 @@
 using LogicReinc.BlendFarm.Client.Exceptions;
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,7 +17,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         private readonly bool _isVertical;
 
 
-        public Image FinalImage { get; private set; }
+        public SKBitmap FinalImage { get; private set; }
 
 
         public SplittedTask(List<RenderNode> nodes, string session, string version, long fileId, RenderManagerSettings settings = null, bool vertical = false) : base(nodes, session, version, fileId, settings)
@@ -28,8 +28,8 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         protected override async Task<bool> Execute()
         {
             object drawLock = new object();
-            Bitmap result = new Bitmap(Settings.OutputWidth, Settings.OutputHeight);
-            Graphics g = Graphics.FromImage(result);
+            SKBitmap result = new SKBitmap(Settings.OutputWidth, Settings.OutputHeight);
+            SKCanvas g = new SKCanvas(result);
             try
             {
                 Dictionary<RenderNode, RenderSubTask> assignment = GetSplitSubTasks(_usedNodes, _isVertical);
@@ -83,7 +83,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                                 continue;
                             }
 
-                            using (Image img = ImageTypes.ImageConverter.Convert(taskPart.Image, task.Parent.Settings.RenderFormat))
+                            using (SKBitmap img = ImageTypes.ImageConverter.Convert(taskPart.Image, task.Parent.Settings.RenderFormat))
                                 ProcessTile(task, img, ref g, ref result, ref drawLock);
 
                             ChangeProgress(Progress + task.Value);

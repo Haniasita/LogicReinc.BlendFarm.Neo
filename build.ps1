@@ -213,6 +213,9 @@ function Package-Build {
     if (Test-Path "$pkgDir.zip" -PathType Leaf) {
         Remove-Item "$pkgDir.zip" -Force -ErrorAction Stop
     }
+    if (Test-Path "$pkgDir.tar.gz" -PathType Leaf) {
+        Remove-Item "$pkgDir.tar.gz" -Force -ErrorAction Stop
+    }
 
     New-Item -ItemType Directory -Path $pkgDir -Force | Out-Null
 
@@ -241,10 +244,17 @@ function Package-Build {
 
     if ($CreateZip) {
         Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
-        Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
-        Pop-Location
 
-        Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+        # Use tar.gz for Linux/macOS, zip for Windows
+        if ($Platform -in @("linux", "macos", "macos-arm")) {
+            tar -czf "$pkgName.tar.gz" $pkgName
+            Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.tar.gz"
+        } else {
+            Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
+            Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+        }
+
+        Pop-Location
     } else {
         Write-Host "Built: BlendFarm-Neo-$versionWithBuild/$pkgName/"
     }
@@ -298,10 +308,10 @@ function Package-MacOSArm {
 
     if ($CreateZip) {
         Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
-        Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
+        tar -czf "$pkgName.tar.gz" $pkgName
         Pop-Location
 
-        Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+        Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.tar.gz"
     } else {
         Write-Host "Built: BlendFarm-Neo-$versionWithBuild/$pkgName/"
     }

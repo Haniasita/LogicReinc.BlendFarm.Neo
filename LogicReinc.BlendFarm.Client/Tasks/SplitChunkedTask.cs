@@ -1,9 +1,9 @@
 using LogicReinc.BlendFarm.Client.ImageTypes;
 using LogicReinc.BlendFarm.Shared;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
 {
     public class SplitChunkedTask : RenderTask, IImageTask
     {
-        public Image FinalImage { get; private set; }
+        public SKBitmap FinalImage { get; private set; }
 
         public SplitChunkedTask(List<RenderNode> nodes, string session, string version, long fileId, RenderManagerSettings settings = null) : base(nodes, session, version, fileId, settings)
         {
@@ -22,8 +22,8 @@ namespace LogicReinc.BlendFarm.Client.Tasks
         protected override async Task<bool> Execute()
         {
             object drawLock = new object();
-            Bitmap result = new Bitmap(Settings.OutputWidth, Settings.OutputHeight);
-            Graphics g = Graphics.FromImage(result);
+            SKBitmap result = new SKBitmap(Settings.OutputWidth, Settings.OutputHeight);
+            SKCanvas g = new SKCanvas(result);
             try
             {
 
@@ -62,7 +62,7 @@ namespace LogicReinc.BlendFarm.Client.Tasks
                         {
                             SubTaskBatchResult resp = ExecuteSubTasks(node, (rsbt, rbr) =>
                             {
-                                using (Image img = ImageTypes.ImageConverter.Convert(rbr.Data, Settings.RenderFormat))
+                                using (SKBitmap img = ImageTypes.ImageConverter.Convert(rbr.Data, Settings.RenderFormat))
                                     ProcessTile(rsbt, img, ref g, ref result, ref drawLock);
 
                                 ChangeProgress(Progress + rsbt.Value);
