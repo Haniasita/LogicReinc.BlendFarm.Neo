@@ -3,7 +3,8 @@ param(
     [string]$Targets,
     [string]$Version,
     [switch]$RunTests,
-    [switch]$CleanBlender
+    [switch]$CleanBlender,
+    [switch]$Zip
 )
 
 $ErrorActionPreference = "Stop"
@@ -176,6 +177,7 @@ function Build-Component {
     Write-Host "========== Building $Component ($RID) ==========" -ForegroundColor Green
     & dotnet publish $project -f $Framework -c Release -r $RID `
         -p:PublishSingleFile=true `
+        -p:IncludeNativeLibrariesForSelfExtract=true `
         -p:PublishReadyToRunShowWarnings=false `
         --self-contained $true `
         -o "_Build/$Component/$RID"
@@ -188,7 +190,8 @@ function Package-Build {
         [string]$Component,
         [string]$Platform,
         [string]$RID,
-        [string]$ExeName
+        [string]$ExeName,
+        [bool]$CreateZip = $false
     )
 
     $capitalComponent = (Get-Culture).TextInfo.ToTitleCase($Component)
@@ -212,19 +215,38 @@ function Package-Build {
     }
 
     New-Item -ItemType Directory -Path $pkgDir -Force | Out-Null
-    Copy-Item "_Build/$Component/$RID/$ExeName" "$pkgDir/"
 
-    Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
-    Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
-    Pop-Location
+    # Copy only necessary files, excluding debug/utility files
+    Get-ChildItem "_Build/$Component/$RID" | Where-Object {
+        $name = $_.Name
+        # Exclude: debug symbols, debug tools, python scripts, unnecessary files
+        -not ($name -match '\.(pdb|dbg)$') -and
+        -not ($name -match '(createdump|windbg)') -and
+        -not ($name -match '\.(py|pyc)$')
+    } | ForEach-Object {
+        if ($_.PSIsContainer) {
+            Copy-Item $_.FullName "$pkgDir/$($_.Name)" -Recurse
+        } else {
+            Copy-Item $_.FullName "$pkgDir/"
+        }
+    }
 
-    Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+    if ($CreateZip) {
+        Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
+        Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
+        Pop-Location
+
+        Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+    } else {
+        Write-Host "Built: BlendFarm-Neo-$versionWithBuild/$pkgName/"
+    }
 }
 
 # Function to package macOS ARM64 with .app bundle
 function Package-MacOSArm {
     param(
-        [string]$Component
+        [string]$Component,
+        [bool]$CreateZip = $false
     )
 
     $capitalComponent = (Get-Culture).TextInfo.ToTitleCase($Component)
@@ -266,11 +288,15 @@ function Package-MacOSArm {
         Copy-Item $_.FullName "$pkgDir/LogicReinc.BlendFarm.app/Contents/MacOS/"
     }
 
-    Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
-    Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
-    Pop-Location
+    if ($CreateZip) {
+        Push-Location "Releases/BlendFarm-Neo-$versionWithBuild"
+        Compress-Archive -Path $pkgName -DestinationPath "$pkgName.zip" -Force
+        Pop-Location
 
-    Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+        Write-Host "Packaged: BlendFarm-Neo-$versionWithBuild/$pkgName.zip"
+    } else {
+        Write-Host "Built: BlendFarm-Neo-$versionWithBuild/$pkgName/"
+    }
     return $true
 }
 
@@ -302,10 +328,10 @@ foreach ($platform in $PlatformList) {
 
         # Package based on platform
         if ($platform -eq "macos-arm" -and $target -eq "client") {
-            $result = Package-MacOSArm -Component $target
+            $result = Package-MacOSArm -Component $target -CreateZip $Zip
             if (-not $result) { exit 1 }
         } else {
-            Package-Build -Component $target -Platform $platform -RID $rid -ExeName $exeName
+            Package-Build -Component $target -Platform $platform -RID $rid -ExeName $exeName -CreateZip $Zip
         }
     }
 }

@@ -31,18 +31,21 @@ Special thanks to :
 
 **Linux/macOS:**
 ```bash
-./build.sh [--platform <windows|linux|macos|macos-arm|all>] [--targets <client|server|all>] [--run-tests] [--clean-blender]
+./build.sh [--platform <windows|linux|macos|macos-arm|all>] [--targets <client|server|all>] [--run-tests] [--clean-blender] [--zip]
 ```
 
 **Windows:**
 ```powershell
-.\build.ps1 [-Platform <windows|linux|macos|macos-arm|all>] [-Targets <client|server|all>] [-RunTests] [-CleanBlender]
+.\build.ps1 [-Platform <windows|linux|macos|macos-arm|all>] [-Targets <client|server|all>] [-RunTests] [-CleanBlender] [-Zip]
 ```
 
-Omit flags for interactive prompts, outputs to `Releases/`.
+**Building:**
+- Uses interactive prompts if no flags are provided.
+- Single-file executables with bundled dependencies are created in `Releases/`
+- Use `--zip` (bash) or `-Zip` (PowerShell) to compress builds into `.zip` archives
 
 **Testing:**
-- Runs fast unit tests (ParsingTest) by default.
+- Runs fast unit tests (ParsingTest) by default
 - Use `--run-tests` (bash) or `-RunTests` (PowerShell) to run full integration tests (Blender auto-installs, requires internet)
 - Use `--clean-blender` (bash) or `-CleanBlender` (PowerShell) to remove cached installs of Blender after building/testing
 

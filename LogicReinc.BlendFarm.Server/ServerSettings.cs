@@ -45,6 +45,16 @@ namespace LogicReinc.BlendFarm.Server
         /// </summary>
         public string BasicSecurityPassword { get; set; } = null;
 
+        /// <summary>
+        /// Enable automatic sleep/hibernation when no clients connected
+        /// </summary>
+        public bool EnableAutoSleep { get; set; } = false;
+
+        /// <summary>
+        /// Seconds to wait before sleeping when idle (default 1800 = 30 minutes)
+        /// </summary>
+        public int AutoSleepTimeoutSeconds { get; set; } = 1800;
+
         #region Boilerplate
         private static ServerSettings _instance = null;
         public static ServerSettings Instance

@@ -5,6 +5,7 @@ set -e
 # Parse command line arguments
 RUN_TESTS=false
 CLEAN_BLENDER=false
+ZIP=false
 while [[ $# -gt 0 ]]; do
   case $1 in
     --platform) PLATFORM="$2"; shift 2 ;;
@@ -12,6 +13,7 @@ while [[ $# -gt 0 ]]; do
     --version) version="$2"; shift 2 ;;
     --run-tests) RUN_TESTS=true; shift ;;
     --clean-blender) CLEAN_BLENDER=true; shift ;;
+    --zip) ZIP=true; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -160,6 +162,7 @@ build_component() {
   echo "========== Building $component ($rid) =========="
   dotnet publish "$project" -f "$framework" -c Release -r "$rid" \
     -p:PublishSingleFile=true \
+    -p:IncludeNativeLibrariesForSelfExtract=true \
     -p:PublishReadyToRunShowWarnings=false \
     --self-contained true \
     -o "_Build/${component}/${rid}"
@@ -172,6 +175,7 @@ package_build() {
   local platform=$2
   local rid=$3
   local exe_name=$4
+  local create_zip=$5
 
   local display_rid=$(get_display_name "$rid")
   local pkg_name="BlendFarm-Neo-$version_with_build-$(capitalize_first $component)-$display_rid"
@@ -193,18 +197,33 @@ package_build() {
   fi
 
   mkdir -p "$pkg_dir"
-  cp "_Build/${component}/${rid}/$exe_name" "$pkg_dir/"
 
-  cd "Releases/BlendFarm-Neo-$version_with_build"
-  zip -q -r "${pkg_name}.zip" "$pkg_name"
-  cd ../..
+  # Copy only necessary files, excluding debug/utility files
+  find "_Build/${component}/${rid}" -maxdepth 1 -type f | while read file; do
+    filename=$(basename "$file")
+    # Skip debug symbols, debug tools, python scripts
+    if ! [[ "$filename" =~ \.(pdb|dbg)$ ]] && \
+       ! [[ "$filename" =~ (createdump|windbg) ]] && \
+       ! [[ "$filename" =~ \.(py|pyc)$ ]]; then
+      cp "$file" "$pkg_dir/"
+    fi
+  done
 
-  echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+  if [ "$create_zip" = true ]; then
+    cd "Releases/BlendFarm-Neo-$version_with_build"
+    zip -q -r "${pkg_name}.zip" "$pkg_name"
+    cd ../..
+
+    echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+  else
+    echo "Built: BlendFarm-Neo-$version_with_build/${pkg_name}/"
+  fi
 }
 
 # Function to package macOS ARM64 with .app bundle
 package_macos_arm() {
   local component=$1
+  local create_zip=$2
 
   local pkg_name="BlendFarm-Neo-$version_with_build-$(capitalize_first $component)-macos-arm64"
   local pkg_dir="Releases/BlendFarm-Neo-$version_with_build/$pkg_name"
@@ -237,11 +256,15 @@ package_macos_arm() {
   sed -i "s/1.0.3/$version/" "$pkg_dir/LogicReinc.BlendFarm.app/Contents/Info.plist"
   find "_Build/${component}/osx-arm64/" -name "*.dylib" -exec cp {} "$pkg_dir/LogicReinc.BlendFarm.app/Contents/MacOS/" \;
 
-  cd "Releases/BlendFarm-Neo-$version_with_build"
-  zip -q -r "${pkg_name}.zip" "$pkg_name"
-  cd ../..
+  if [ "$create_zip" = true ]; then
+    cd "Releases/BlendFarm-Neo-$version_with_build"
+    zip -q -r "${pkg_name}.zip" "$pkg_name"
+    cd ../..
 
-  echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+    echo "Packaged: BlendFarm-Neo-$version_with_build/${pkg_name}.zip"
+  else
+    echo "Built: BlendFarm-Neo-$version_with_build/${pkg_name}/"
+  fi
 }
 
 # Helper function to capitalize first letter
@@ -290,9 +313,9 @@ for platform in "${PLATFORMS[@]}"; do
 
     # Package based on platform
     if [ "$platform" = "macos-arm" ] && [ "$target" = "client" ]; then
-      package_macos_arm "$target"
+      package_macos_arm "$target" "$ZIP"
     else
-      package_build "$target" "$platform" "$rid" "$exe_name"
+      package_build "$target" "$platform" "$rid" "$exe_name" "$ZIP"
     fi
   done
 done

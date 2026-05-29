@@ -24,8 +24,7 @@ namespace LogicReinc.BlendFarm.Server
 
         private static ConsoleRedirector _redirector = null;
 
-        private static int timeBeforeSleep = 50;
-        private static int sleepTimer = timeBeforeSleep;
+        private static int sleepTimer;
 
         public static void StartIntercepting()
         {
@@ -40,6 +39,37 @@ namespace LogicReinc.BlendFarm.Server
         static void Main(string[] args)
         {
             StartIntercepting();
+
+            // Parse command-line arguments
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--port" && i + 1 < args.Length)
+                {
+                    if (int.TryParse(args[i + 1], out int port))
+                        ServerSettings.Instance.Port = port;
+                    else
+                        Console.WriteLine($"[WARNING] Invalid port value: {args[i + 1]}");
+                }
+                if (args[i] == "--broadcast-port" && i + 1 < args.Length)
+                {
+                    if (int.TryParse(args[i + 1], out int broadcastPort))
+                        ServerSettings.Instance.BroadcastPort = broadcastPort;
+                    else
+                        Console.WriteLine($"[WARNING] Invalid broadcast port value: {args[i + 1]}");
+                }
+                if (args[i] == "--enable-auto-sleep")
+                {
+                    ServerSettings.Instance.EnableAutoSleep = true;
+                }
+                if (args[i] == "--auto-sleep-timeout" && i + 1 < args.Length)
+                {
+                    if (int.TryParse(args[i + 1], out int timeout))
+                        ServerSettings.Instance.AutoSleepTimeoutSeconds = timeout;
+                    else
+                        Console.WriteLine($"[WARNING] Invalid auto-sleep timeout value: {args[i + 1]}");
+                }
+            }
+
             try
             {
                 //List IP addreses of this machine
@@ -70,6 +100,9 @@ namespace LogicReinc.BlendFarm.Server
             Server.Start();
             Console.WriteLine("Server Started");
 
+            // Calculate sleep timer iterations based on timeout setting (500ms per iteration)
+            int sleepIterations = (ServerSettings.Instance.AutoSleepTimeoutSeconds * 1000) / 500;
+            sleepTimer = sleepIterations;
 
             //ReadLines in main loop removed for deployment as this can freeze background threads under specific conditions
             while (true)
@@ -79,11 +112,12 @@ namespace LogicReinc.BlendFarm.Server
                     sleepTimer--;
                     if (sleepTimer == 0)
                     {
-                        sleepTimer = timeBeforeSleep;
-                        SystemSleep.Suspend();
+                        sleepTimer = sleepIterations;
+                        if (ServerSettings.Instance.EnableAutoSleep)
+                            SystemSleep.Suspend();
                     }
                 }
-                else sleepTimer = timeBeforeSleep;
+                else sleepTimer = sleepIterations;
 
                 Thread.Sleep(500);
             }

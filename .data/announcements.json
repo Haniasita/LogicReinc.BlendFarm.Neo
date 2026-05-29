@@ -5,15 +5,15 @@
 		"Segments": [
 			{
 				"Type": "Text",
-				"Text": "BlendFarm Neo is here! This is an unofficial continuation of BlendFarm, rebuilt using modern technologies with added improvements by the community. Stay tuned for more updates and features!"
+				"Text": "BlendFarm Neo is here! This is an unofficial, community-made continuation of LogicReinc's BlendFarm, providing updates and fixes to keep the project alive."
 			},
 			{
 				"Type": "Text",
-				"Text": "Key improvements in BlendFarm Neo 1.1.7 (unofficial patch) include .NET 8 runtime, improved Blender state reporting (OptiX had issues), Wake on LAN support, updated dependencies, code cleanup and optimizations. Refer to the GitHub repository for the full changelog and roadmap."
+				"Text": "Key improvements in BlendFarm Neo 1.1.7 (unofficial patch) include .NET 8 runtime, improved Blender state reporting, Wake on LAN support and updated dependencies. Full improvements list availiable on GitHub!"
 			},
 			{
 				"Type": "Image",
-				"Text": "https://raw.githubusercontent.com/Haniasita/LogicReinc.BlendFarm.Neo/neo-main/.data/blender4.0-art.jpg"
+				"Text": "https://raw.githubusercontent.com/Haniasita/LogicReinc.BlendFarm.Neo/neo-main/.data/blender5.1-art.jpg"
 			},
 			{
 				"Type": "Button",
