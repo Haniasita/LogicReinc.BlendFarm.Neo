@@ -14,7 +14,7 @@ Special thanks to :
 
 - ~~Port the project to .NET 8, updating depedencies with known vulnerabilities~~ 1.1.7-unofficial-patch ✓
 - ~~Allow wake/sleep control for nodes~~ Ludrietz fork pulled, cross-platform compatibility added ✓
-- ~~Validate Apple Silicon compatibility~~ Both client and server functional on M-series Mac's, tested with macOS Tahoe 26.5 ✓
+- ~~Validate Apple Silicon compatibility~~ SkiaSharp conversion allows both client and server on M-series Mac's, tested with macOS Tahoe 26.5 ✓
 - Implement network benchmarking runs to get accurate tile splits on first render
 - Improve compatibility with certain Blender workflows (i.e. baked jigglebones)
 - Split client & manager roles, flamenco-style, while preserving current expected out-of-the-box functionality
